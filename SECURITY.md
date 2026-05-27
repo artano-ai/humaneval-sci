@@ -8,7 +8,7 @@ public issue.
 Instead, report it privately via either:
 
 * GitHub's **Private security advisory** form on this repository, or
-* Email to `security@atomira.eu`
+* Email to `hello@atomira.eu`
 
 You should receive an acknowledgement within 3 business days and a
 status update within 14 days.

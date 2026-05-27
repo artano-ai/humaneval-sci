@@ -8,7 +8,7 @@ The full text is available at:
 ## Reporting
 
 Concerns about contributor behaviour should be reported by email to
-`conduct@atomira.eu`. Reports are confidential and will be reviewed by
+`hello@atomira.eu`. Reports are confidential and will be reviewed by
 the project maintainers within 7 days.
 
 ## Scope
