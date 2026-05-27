@@ -1,0 +1,53 @@
+{
+  "id": "gas-rms-vs-mean-vs-most-probable-py",
+  "card_ids": ["maxwell-boltzmann-speed-distribution"],
+  "domain": "physics-statistical-mechanics",
+  "language": "python",
+  "prompt": "Write a Python function `gas_thermal_speeds(T, m)` that returns the three characteristic speeds of an ideal gas under the Maxwell-Boltzmann distribution at temperature T and particle mass m, as a list [v_p, v_mean, v_rms] in m/s. The three definitions: most probable speed v_p = sqrt(2 k_B T / m), mean speed <v> = sqrt(8 k_B T / (pi m)), root-mean-square speed v_rms = sqrt(3 k_B T / m). Use k_B = 1.380649e-23 J/K. Inputs: T in Kelvin (>0), m in kg (>0). Raise ValueError if T <= 0 or m <= 0.",
+  "reference_solution": "import math\n\ndef gas_thermal_speeds(T: float, m: float) -> list:\n    k_B = 1.380649e-23\n    if T <= 0:\n        raise ValueError(\"T must be positive\")\n    if m <= 0:\n        raise ValueError(\"m must be positive\")\n    kT_over_m = k_B * T / m\n    v_p   = math.sqrt(2.0 * kT_over_m)\n    v_mean = math.sqrt(8.0 * kT_over_m / math.pi)\n    v_rms  = math.sqrt(3.0 * kT_over_m)\n    return [v_p, v_mean, v_rms]\n",
+  "test_cases": [
+    {
+      "name": "nitrogen_room_temperature",
+      "description": "N2 at 300 K, m = 4.65e-26 kg. Computed: v_p≈422.08, <v>≈476.26, v_rms≈516.94 m/s. Ratios <v>/v_p = sqrt(4/pi) ≈ 1.128, v_rms/<v> = sqrt(3 pi / 8) ≈ 1.085.",
+      "inputs": { "T": 300.0, "m": 4.65e-26 },
+      "expected": { "speeds_v": [422.08, 476.26, 516.94], "atol": 0.5 }
+    },
+    {
+      "name": "helium_room_temperature",
+      "description": "He at 300 K, m = 6.6464e-27 kg. Computed: v_p≈1116.41, <v>≈1259.73, v_rms≈1367.32 m/s.",
+      "inputs": { "T": 300.0, "m": 6.6464e-27 },
+      "expected": { "speeds_v": [1116.41, 1259.73, 1367.32], "atol": 0.5 }
+    },
+    {
+      "name": "hydrogen_at_77K",
+      "description": "H2 at 77 K (liquid nitrogen temperature), m = 3.347e-27 kg. Computed: v_p≈797.03, <v>≈899.35, v_rms≈976.16 m/s.",
+      "inputs": { "T": 77.0, "m": 3.347e-27 },
+      "expected": { "speeds_v": [797.03, 899.35, 976.16], "atol": 0.5 }
+    },
+    {
+      "name": "rejects_zero_T",
+      "inputs": { "T": 0.0, "m": 4.65e-26 },
+      "expected": { "raises": "ValueError" }
+    },
+    {
+      "name": "rejects_negative_mass",
+      "inputs": { "T": 300.0, "m": -4.65e-26 },
+      "expected": { "raises": "ValueError" }
+    }
+  ],
+  "verification_targets": {
+    "dimensional": {
+      "lhs_label": "v [m/s]",
+      "lhs_dims": { "L": 1, "T": -1 },
+      "rhs_label": "sqrt(k_B T / m)  [m/s]",
+      "rhs_dims": { "L": 1, "T": -1 }
+    },
+    "limits": [
+      "Ratios are temperature- and mass-independent: <v>/v_p = sqrt(4/pi); v_rms/<v> = sqrt(3 pi / 8).",
+      "v_rms > <v> > v_p always (Cauchy-Schwarz on positive distributions)."
+    ],
+    "validation_envelopes": {
+      "boltzmann_J_per_K": [1.380648e-23, 1.380650e-23]
+    }
+  }
+}

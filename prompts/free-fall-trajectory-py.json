@@ -1,0 +1,37 @@
+{
+  "id": "free-fall-trajectory-py",
+  "card_ids": ["free-fall-uniform-gravity"],
+  "domain": "physics-classical-mechanics",
+  "language": "python",
+  "prompt": "Write a Python function `trajectory(y0, v0, g, t)` that returns the height y(t) of an object in free fall under uniform gravity, using the standard kinematic equation. Inputs: initial height y0 (m), initial upward velocity v0 (m/s), gravitational acceleration magnitude g (m/s^2, positive), and a sequence of times t (s) — list or numpy array. Output: numpy array y(t) of the same shape. Use up-positive sign convention.",
+  "reference_solution": "import numpy as np\n\ndef trajectory(y0: float, v0: float, g: float, t) -> np.ndarray:\n    t = np.asarray(t, dtype=float)\n    return y0 + v0 * t - 0.5 * g * t ** 2\n",
+  "test_cases": [
+    {
+      "name": "static_drop_from_height",
+      "description": "Object dropped from rest at y=100m, after t=2s.",
+      "inputs": { "y0": 100.0, "v0": 0.0, "g": 9.81, "t": [0.0, 1.0, 2.0] },
+      "expected": { "y": [100.0, 95.095, 80.38], "atol": 0.01 }
+    },
+    {
+      "name": "thrown_upward_returns_to_origin",
+      "description": "Object thrown straight up from y=0 with v0=10 returns to y=0 at t=2 v0/g.",
+      "inputs": { "y0": 0.0, "v0": 10.0, "g": 9.81, "t": [2.039] },
+      "expected": { "y": [0.0], "atol": 0.05 }
+    }
+  ],
+  "verification_targets": {
+    "dimensional": {
+      "lhs_label": "y(t)  [m]",
+      "lhs_dims": { "L": 1 },
+      "rhs_label": "y_0 + v_0 t - g t^2 / 2  [m]",
+      "rhs_dims": { "L": 1 }
+    },
+    "limits": [
+      "t = 0:  y = y_0",
+      "peak (v = 0):  t* = v_0 / g, y_max = y_0 + v_0^2 / (2 g)",
+      "energy_conservation: (1/2) v^2 + g y = const along trajectory"
+    ],
+    "conservation_laws": ["energy"],
+    "validation_envelopes": { "gEarth_m_per_s2": [9.79, 9.83] }
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "id": "boltzmann-entropy-change-py",
+  "card_ids": ["boltzmann-entropy"],
+  "domain": "physics-statistical-mechanics",
+  "language": "python",
+  "prompt": "Write a Python function `entropy_change(W1, W2)` that returns the change in Boltzmann entropy ΔS = k_B * ln(W2 / W1) (J/K) between two macrostates of microstate counts W1 and W2. Use k_B = 1.380649e-23 J/K. Raise ValueError if W1 < 1 or W2 < 1.",
+  "reference_solution": "import math\n\ndef entropy_change(W1: float, W2: float) -> float:\n    k_B = 1.380649e-23\n    if W1 < 1:\n        raise ValueError(\"W1 must be >= 1\")\n    if W2 < 1:\n        raise ValueError(\"W2 must be >= 1\")\n    return k_B * math.log(W2 / W1)\n",
+  "test_cases": [
+    {
+      "name": "no_change",
+      "description": "W2 = W1 -> ΔS = 0.",
+      "inputs": { "W1": 1.0e10, "W2": 1.0e10 },
+      "expected": { "dS": 0.0, "atol": 1e-30 }
+    },
+    {
+      "name": "doubling_states",
+      "description": "W2 = 2 W1 -> ΔS = k_B ln(2) ≈ 9.57e-24 J/K.",
+      "inputs": { "W1": 1.0, "W2": 2.0 },
+      "expected": { "dS_within_eps": [9.56e-24, 9.58e-24] }
+    },
+    {
+      "name": "halving_states_negative_entropy_change",
+      "description": "W2 < W1 -> ΔS < 0 (decrease in disorder).",
+      "inputs": { "W1": 100.0, "W2": 50.0 },
+      "expected": { "dS_within_eps": [-9.58e-24, -9.56e-24] }
+    },
+    {
+      "name": "rejects_W1_below_one",
+      "inputs": { "W1": 0.5, "W2": 1.0 },
+      "expected": { "raises": "ValueError" }
+    }
+  ],
+  "verification_targets": {
+    "dimensional": {
+      "lhs_label": "ΔS  [J/K]",
+      "lhs_dims": { "L": 2, "M": 1, "T": -2, "Theta": -1 },
+      "rhs_label": "k_B ln(W2/W1)  [J/K]",
+      "rhs_dims": { "L": 2, "M": 1, "T": -2, "Theta": -1 }
+    },
+    "limits": [
+      "W2 = W1:  ΔS = 0",
+      "W2 = 2 W1:  ΔS = k_B ln 2  (one bit of disorder)",
+      "isolated system, spontaneous process:  ΔS >= 0  (second law)"
+    ]
+  }
+}

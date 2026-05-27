@@ -1,0 +1,50 @@
+{
+  "id": "ideal-gas-density-py",
+  "card_ids": ["ideal-gas-law"],
+  "domain": "chemistry",
+  "language": "python",
+  "prompt": "Write a Python function `gas_density(P, M, T)` that returns the mass density (kg/m^3) of an ideal gas with molar mass M (kg/mol) at pressure P (Pa) and absolute temperature T (K). Use R = 8.314462618 J/(mol·K). Derivation: PV = nRT and ρ = nM/V give ρ = P M / (R T). Raise ValueError if any of P, M, T is non-positive.",
+  "reference_solution": "def gas_density(P: float, M: float, T: float) -> float:\n    R = 8.314462618\n    if P <= 0:\n        raise ValueError(\"pressure P must be positive\")\n    if M <= 0:\n        raise ValueError(\"molar mass M must be positive\")\n    if T <= 0:\n        raise ValueError(\"absolute temperature T must be positive\")\n    return P * M / (R * T)\n",
+  "test_cases": [
+    {
+      "name": "air_at_stp",
+      "description": "Dry air (M=0.02897 kg/mol) at 101325 Pa and 273.15 K -> ~1.29 kg/m^3.",
+      "inputs": { "P": 101325.0, "M": 0.02897, "T": 273.15 },
+      "expected": { "rho_within_eps": [1.288, 1.295] }
+    },
+    {
+      "name": "hydrogen_at_stp",
+      "description": "H2 (M=0.002016 kg/mol) at STP -> ~0.0899 kg/m^3.",
+      "inputs": { "P": 101325.0, "M": 0.002016, "T": 273.15 },
+      "expected": { "rho_within_eps": [0.0896, 0.0903] }
+    },
+    {
+      "name": "isobaric_inverse_in_T",
+      "description": "At fixed P and M, doubling T halves rho.",
+      "inputs_a": { "P": 101325.0, "M": 0.029, "T": 273.15 },
+      "inputs_b": { "P": 101325.0, "M": 0.029, "T": 546.3 },
+      "expected": { "rho_b_over_rho_a": [0.499, 0.501] }
+    },
+    {
+      "name": "rejects_negative_pressure",
+      "inputs": { "P": -1.0, "M": 0.029, "T": 300.0 },
+      "expected": { "raises": "ValueError" }
+    }
+  ],
+  "verification_targets": {
+    "dimensional": {
+      "lhs_label": "ρ  [kg/m^3]",
+      "lhs_dims": { "L": -3, "M": 1 },
+      "rhs_label": "P M / (R T)  [kg/m^3]",
+      "rhs_dims": { "L": -3, "M": 1 }
+    },
+    "limits": [
+      "T -> infinity:  rho -> 0  (thermal expansion to vacuum)",
+      "P -> 0:  rho -> 0  (vacuum limit)",
+      "T -> 0+:  rho -> infinity  (singular limit, not physical for ideal gas — must raise for T <= 0)"
+    ],
+    "validation_envelopes": {
+      "gasConstantR_J_per_mol_K": [8.31446, 8.31447]
+    }
+  }
+}

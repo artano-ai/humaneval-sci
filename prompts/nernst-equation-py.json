@@ -1,0 +1,55 @@
+{
+  "id": "nernst-equation-py",
+  "card_ids": ["nernst-equation"],
+  "domain": "chemistry-electrochemistry",
+  "language": "python",
+  "prompt": "Write a Python function `nernst_potential(E_standard, n, T, Q)` that returns the half-cell potential E (Volts) using the Nernst equation: E = E_standard - (R T / (n F)) * ln(Q). Inputs: standard potential E_standard (V, any sign), number of electrons transferred n (positive integer), absolute temperature T (K, positive), reaction quotient Q (dimensionless, positive). Use R = 8.314462618 J/(mol·K) and F = 96485.33212 C/mol. Raise ValueError if n <= 0 or T <= 0 or Q <= 0.",
+  "reference_solution": "import math\n\ndef nernst_potential(E_standard: float, n: int, T: float, Q: float) -> float:\n    R = 8.314462618\n    F = 96485.33212\n    if n <= 0:\n        raise ValueError(\"n (electrons transferred) must be positive\")\n    if T <= 0:\n        raise ValueError(\"temperature T must be positive\")\n    if Q <= 0:\n        raise ValueError(\"reaction quotient Q must be positive\")\n    return E_standard - (R * T / (n * F)) * math.log(Q)\n",
+  "test_cases": [
+    {
+      "name": "standard_conditions",
+      "description": "Q = 1 -> ln(Q) = 0 -> E = E_standard.",
+      "inputs": { "E_standard": 0.337, "n": 2, "T": 298.15, "Q": 1.0 },
+      "expected": { "E": 0.337, "atol": 1e-9 }
+    },
+    {
+      "name": "ten_to_one_quotient_one_electron",
+      "description": "n=1, T=298 K, Q=10 -> nernst slope ~ -59.16 mV.",
+      "inputs": { "E_standard": 0.0, "n": 1, "T": 298.15, "Q": 10.0 },
+      "expected": { "E_within_eps": [-0.0593, -0.0590] }
+    },
+    {
+      "name": "two_electron_half_slope",
+      "description": "n=2 halves the slope -> ~ -29.58 mV per decade.",
+      "inputs": { "E_standard": 0.0, "n": 2, "T": 298.15, "Q": 10.0 },
+      "expected": { "E_within_eps": [-0.0297, -0.0294] }
+    },
+    {
+      "name": "rejects_zero_temperature",
+      "inputs": { "E_standard": 0.0, "n": 1, "T": 0.0, "Q": 1.0 },
+      "expected": { "raises": "ValueError" }
+    },
+    {
+      "name": "rejects_zero_n",
+      "inputs": { "E_standard": 0.0, "n": 0, "T": 298.15, "Q": 1.0 },
+      "expected": { "raises": "ValueError" }
+    }
+  ],
+  "verification_targets": {
+    "dimensional": {
+      "lhs_label": "E  [V]",
+      "lhs_dims": { "L": 2, "M": 1, "T": -3, "I": -1 },
+      "rhs_label": "E° - (RT/nF) ln Q  [V]",
+      "rhs_dims": { "L": 2, "M": 1, "T": -3, "I": -1 }
+    },
+    "limits": [
+      "Q = 1:  E = E_standard  (definition of standard state)",
+      "Q -> infinity:  E -> -infinity  (sign depends on n; here driving force vanishes)",
+      "T -> 0:  E -> E_standard  (concentration effects vanish at absolute zero)"
+    ],
+    "validation_envelopes": {
+      "faradayConstant_C_per_mol": [96485.0, 96486.0],
+      "gasConstantR_J_per_mol_K": [8.31446, 8.31447]
+    }
+  }
+}

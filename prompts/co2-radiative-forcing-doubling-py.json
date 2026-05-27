@@ -1,0 +1,61 @@
+{
+  "id": "co2-radiative-forcing-doubling-py",
+  "card_ids": ["co2-greenhouse-forcing"],
+  "domain": "climate-radiative-forcing",
+  "language": "python",
+  "prompt": "Compute the top-of-atmosphere radiative forcing ΔF (W/m²) due to a change in atmospheric CO₂ from concentration C0 to C, using the standard IPCC logarithmic approximation: ΔF = 5.35 * ln(C / C0). The numerical coefficient 5.35 has units of W/m² and folds in the saturation of CO₂'s near-infrared absorption bands. Write a Python function `co2_radiative_forcing(C, C0)` returning ΔF in W/m². Inputs: C, C0 > 0 in ppm (units cancel; only the ratio matters). Raise ValueError if C <= 0 or C0 <= 0.",
+  "reference_solution": "import math\n\ndef co2_radiative_forcing(C: float, C0: float) -> float:\n    if C <= 0:\n        raise ValueError(\"C must be positive\")\n    if C0 <= 0:\n        raise ValueError(\"C0 must be positive\")\n    return 5.35 * math.log(C / C0)\n",
+  "test_cases": [
+    {
+      "name": "doubling_CO2",
+      "description": "C/C0 = 2 (pre-industrial 280 → 560 ppm). ΔF = 5.35 * ln(2) ≈ 3.708 W/m². This is the canonical 'climate sensitivity' forcing.",
+      "inputs": { "C": 560.0, "C0": 280.0 },
+      "expected": { "deltaF_W_per_m2_within_eps": [3.700, 3.715] }
+    },
+    {
+      "name": "no_change_zero_forcing",
+      "description": "C = C0: ΔF = 0 (logarithm vanishes).",
+      "inputs": { "C": 280.0, "C0": 280.0 },
+      "expected": { "deltaF_W_per_m2": 0.0, "atol": 1.0e-9 }
+    },
+    {
+      "name": "halving_CO2_negative_forcing",
+      "description": "C/C0 = 0.5: ΔF = -3.708 W/m² (cooling).",
+      "inputs": { "C": 140.0, "C0": 280.0 },
+      "expected": { "deltaF_W_per_m2_within_eps": [-3.715, -3.700] }
+    },
+    {
+      "name": "quadrupling",
+      "description": "C/C0 = 4: ΔF = 5.35 * ln(4) = 2 * 3.708 ≈ 7.417 W/m² (logarithmic scaling).",
+      "inputs": { "C": 1120.0, "C0": 280.0 },
+      "expected": { "deltaF_W_per_m2_within_eps": [7.410, 7.425] }
+    },
+    {
+      "name": "modern_value_420ppm",
+      "description": "C = 420 ppm, C0 = 280 ppm (≈current vs pre-industrial). ΔF ≈ 2.169 W/m².",
+      "inputs": { "C": 420.0, "C0": 280.0 },
+      "expected": { "deltaF_W_per_m2_within_eps": [2.16, 2.18] }
+    },
+    {
+      "name": "rejects_zero_concentration",
+      "inputs": { "C": 0.0, "C0": 280.0 },
+      "expected": { "raises": "ValueError" }
+    }
+  ],
+  "verification_targets": {
+    "dimensional": {
+      "lhs_label": "ΔF  [W/m²]",
+      "lhs_dims": { "M": 1, "T": -3 },
+      "rhs_label": "5.35 W/m² · ln(C/C0)  [W/m² · 1 = W/m²]",
+      "rhs_dims": { "M": 1, "T": -3 }
+    },
+    "limits": [
+      "C = C0: ΔF = 0 (no change, no forcing).",
+      "C → ∞: ΔF → +∞ logarithmically (slow saturation, not catastrophic).",
+      "Halving and doubling are symmetric in magnitude: |ΔF(C0/2)| = |ΔF(2 C0)|."
+    ],
+    "validation_envelopes": {
+      "co2_forcing_coefficient_W_per_m2": [5.34, 5.36]
+    }
+  }
+}

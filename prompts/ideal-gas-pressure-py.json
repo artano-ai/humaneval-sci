@@ -1,0 +1,43 @@
+{
+  "id": "ideal-gas-pressure-py",
+  "card_ids": ["ideal-gas-law"],
+  "domain": "chemistry-thermodynamics",
+  "language": "python",
+  "prompt": "Write a Python function `pressure_from_state(n, V, T)` that returns the pressure (Pa) of an ideal gas given amount of substance n (mol), volume V (m^3), and temperature T (K). Use R = 8.314 J/(mol K). Raise ValueError if T <= 0 (absolute temperature must be positive).",
+  "reference_solution": "def pressure_from_state(n: float, V: float, T: float) -> float:\n    R = 8.314\n    if T <= 0:\n        raise ValueError(\"Temperature must be positive (kelvin scale)\")\n    return n * R * T / V\n",
+  "test_cases": [
+    {
+      "name": "stp_one_mol",
+      "description": "1 mol at STP (273.15 K, 22.414e-3 m^3) should give ~101325 Pa.",
+      "inputs": { "n": 1.0, "V": 0.022414, "T": 273.15 },
+      "expected": { "P_within_eps": [101300, 101400] }
+    },
+    {
+      "name": "isothermal_doubles_when_volume_halves",
+      "description": "Boyle's law: at fixed T, halving V doubles P.",
+      "inputs_a": { "n": 1.0, "V": 0.025, "T": 300.0 },
+      "inputs_b": { "n": 1.0, "V": 0.0125, "T": 300.0 },
+      "expected": { "P_b_over_P_a": [1.99, 2.01] }
+    },
+    {
+      "name": "negative_temperature_raises",
+      "description": "T = -1 K must raise ValueError (kelvin is absolute).",
+      "inputs": { "n": 1.0, "V": 0.025, "T": -1.0 },
+      "expected": { "raises": "ValueError" }
+    }
+  ],
+  "verification_targets": {
+    "dimensional": {
+      "lhs_label": "P  [Pa = kg / (m s^2)]",
+      "lhs_dims": { "M": 1, "L": -1, "T": -2 },
+      "rhs_label": "n R T / V  [J / m^3 = Pa]",
+      "rhs_dims": { "M": 1, "L": -1, "T": -2 }
+    },
+    "limits": [
+      "isothermal (T const): P V = const (Boyle)",
+      "isobaric (P const): V/T = const (Charles)",
+      "T -> 0: ideal-gas law breaks; non-physical regime"
+    ],
+    "validation_envelopes": { "gasConstant_J_per_molK": [8.314, 8.315] }
+  }
+}

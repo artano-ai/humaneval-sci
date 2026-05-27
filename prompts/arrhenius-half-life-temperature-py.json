@@ -1,0 +1,56 @@
+{
+  "id": "arrhenius-half-life-temperature-py",
+  "card_ids": ["arrhenius-rate-law"],
+  "domain": "chemistry-kinetics",
+  "language": "python",
+  "prompt": "Write a Python function `temperature_for_half_life(A, Ea, t_half)` that returns the absolute temperature T (K) at which a first-order reaction has a given half-life. Derivation: for first-order kinetics, t_{1/2} = ln(2) / k. Combined with the Arrhenius equation k = A exp(-Ea / (R T)), solve for T: T = -Ea / (R * ln(ln(2) / (A * t_half))). Use R = 8.314462618 J/(mol·K). Inputs: pre-exponential factor A (1/s, positive), activation energy Ea (J/mol, positive), target half-life t_half (s, positive). Raise ValueError on any non-positive input or if A * t_half <= ln(2) (no real T can produce a half-life that fast in the Arrhenius model — would require k > A).",
+  "reference_solution": "import math\n\ndef temperature_for_half_life(A: float, Ea: float, t_half: float) -> float:\n    R = 8.314462618\n    if A <= 0:\n        raise ValueError(\"A must be positive\")\n    if Ea <= 0:\n        raise ValueError(\"Ea must be positive\")\n    if t_half <= 0:\n        raise ValueError(\"t_half must be positive\")\n    k_required = math.log(2.0) / t_half\n    if k_required >= A:\n        raise ValueError(\"required rate exceeds A — no real T can produce this half-life\")\n    return -Ea / (R * math.log(k_required / A))\n",
+  "test_cases": [
+    {
+      "name": "typical_organic_t_half_one_second",
+      "description": "A=1e13, Ea=50 kJ/mol, t_half=1s -> k_required = 0.693; T = -50000 / (8.314 * ln(0.693/1e13)) ≈ 198 K.",
+      "inputs": { "A": 1.0e13, "Ea": 50000.0, "t_half": 1.0 },
+      "expected": { "T_within_eps": [197.0, 199.0] }
+    },
+    {
+      "name": "longer_half_life_lower_T",
+      "description": "INTUITION CHECK: longer half-life means SLOWER reaction, which requires LOWER T (Arrhenius is monotone in T). t_half=1000s -> T < temperature_for(t_half=1s). Computed: T = -50000 / (8.314 * ln(ln(2)/(1e13 * 1000))) ≈ 161.6 K.",
+      "inputs": { "A": 1.0e13, "Ea": 50000.0, "t_half": 1000.0 },
+      "expected": { "T_within_eps": [161.0, 162.0] }
+    },
+    {
+      "name": "round_trip_consistency",
+      "description": "Pick T=300 K, A=1e13, Ea=50000: forward gives k ≈ 1.97e4, t_half = ln(2)/k ≈ 3.524e-5. Recover T.",
+      "inputs": { "A": 1.0e13, "Ea": 50000.0, "t_half": 3.524e-5 },
+      "expected": { "T_within_eps": [299.5, 300.5] }
+    },
+    {
+      "name": "rejects_impossibly_fast_half_life",
+      "description": "t_half = 1e-15 s requires k > A -> physically impossible in Arrhenius model.",
+      "inputs": { "A": 1.0e13, "Ea": 50000.0, "t_half": 1.0e-15 },
+      "expected": { "raises": "ValueError" }
+    },
+    {
+      "name": "rejects_negative_Ea",
+      "inputs": { "A": 1.0e13, "Ea": -1.0, "t_half": 1.0 },
+      "expected": { "raises": "ValueError" }
+    }
+  ],
+  "verification_targets": {
+    "dimensional": {
+      "lhs_label": "T  [K]",
+      "lhs_dims": { "Theta": 1 },
+      "rhs_label": "-Ea / (R ln(ln(2)/(A t_half)))  [K]",
+      "rhs_dims": { "Theta": 1 }
+    },
+    "limits": [
+      "t_half = ln(2)/A:  k_required = A -> T -> infinity (must raise)",
+      "t_half -> infinity:  k_required -> 0 -> T -> 0+",
+      "t_half = ln(2)/k:  Round-trip with rate_constant(A, Ea, T) returns the same T"
+    ],
+    "validation_envelopes": {
+      "gasConstantR_J_per_mol_K": [8.31446, 8.31447],
+      "ln2": [0.6931, 0.6932]
+    }
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "id": "reynolds-number-py",
+  "card_ids": ["reynolds-number-similarity"],
+  "domain": "engineering-fluid-dynamics",
+  "language": "python",
+  "prompt": "Write a Python function `reynolds_number(rho, v, L, mu)` that returns the Reynolds number Re = ρ v L / μ for a fluid flow. Inputs: density ρ (kg/m^3, positive), characteristic velocity v (m/s, positive), characteristic length L (m, positive), dynamic viscosity μ (Pa·s, positive). Raise ValueError if any of ρ, v, L, μ are non-positive.",
+  "reference_solution": "def reynolds_number(rho: float, v: float, L: float, mu: float) -> float:\n    if rho <= 0:\n        raise ValueError(\"density rho must be positive\")\n    if v <= 0:\n        raise ValueError(\"velocity v must be positive\")\n    if L <= 0:\n        raise ValueError(\"length L must be positive\")\n    if mu <= 0:\n        raise ValueError(\"viscosity mu must be positive\")\n    return rho * v * L / mu\n",
+  "test_cases": [
+    {
+      "name": "water_in_pipe_turbulent",
+      "description": "Water (ρ=1000, μ=1e-3) at 1 m/s in a 0.01 m pipe -> Re = 1e4 (turbulent).",
+      "inputs": { "rho": 1000.0, "v": 1.0, "L": 0.01, "mu": 1.0e-3 },
+      "expected": { "Re": 10000.0, "atol": 1e-6 }
+    },
+    {
+      "name": "viscous_creep",
+      "description": "Honey-like flow: high μ, low v, small L -> Re << 1 (laminar / Stokes regime). Re = 1400 * 0.01 * 0.001 / 10 = 1.4e-3.",
+      "inputs": { "rho": 1400.0, "v": 0.01, "L": 0.001, "mu": 10.0 },
+      "expected": { "Re_within_eps": [1.39e-3, 1.41e-3] }
+    },
+    {
+      "name": "linear_in_velocity",
+      "description": "Doubling v doubles Re (linear scaling).",
+      "inputs_a": { "rho": 1.0, "v": 1.0, "L": 1.0, "mu": 1.0 },
+      "inputs_b": { "rho": 1.0, "v": 2.0, "L": 1.0, "mu": 1.0 },
+      "expected": { "Re_b_over_Re_a": [1.99, 2.01] }
+    },
+    {
+      "name": "rejects_zero_viscosity",
+      "description": "μ=0 is an ideal fluid; Re is undefined / infinite.",
+      "inputs": { "rho": 1000.0, "v": 1.0, "L": 0.01, "mu": 0.0 },
+      "expected": { "raises": "ValueError" }
+    },
+    {
+      "name": "rejects_negative_length",
+      "inputs": { "rho": 1000.0, "v": 1.0, "L": -0.01, "mu": 1.0e-3 },
+      "expected": { "raises": "ValueError" }
+    }
+  ],
+  "verification_targets": {
+    "dimensional": {
+      "lhs_label": "Re  [dimensionless]",
+      "lhs_dims": {},
+      "rhs_label": "ρ v L / μ  [dimensionless]",
+      "rhs_dims": {}
+    },
+    "limits": [
+      "μ -> infinity:  Re -> 0  (Stokes / creeping flow)",
+      "μ -> 0:  Re -> infinity  (inviscid limit; undefined here, must raise)",
+      "Re ~ 2300:  laminar-to-turbulent transition in pipe flow"
+    ],
+    "validation_envelopes": {
+      "waterViscosity_at_20C_Pa_s": [0.0009, 0.0011],
+      "airViscosity_at_20C_Pa_s": [1.7e-5, 1.9e-5]
+    }
+  }
+}

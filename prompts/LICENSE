@@ -1,0 +1,45 @@
+Creative Commons Attribution 4.0 International License (CC BY 4.0)
+
+Copyright (c) 2026 Atomira Technologies, S.L. and the Lemma cards
+contributors.
+
+This work is licensed under the Creative Commons Attribution 4.0
+International License. You are free to:
+
+  * Share — copy and redistribute the material in any medium or format
+  * Adapt — remix, transform, and build upon the material for any
+    purpose, even commercially
+
+under the following terms:
+
+  * Attribution — You must give appropriate credit, provide a link to
+    the license, and indicate if changes were made. You may do so in
+    any reasonable manner, but not in any way that suggests the licensor
+    endorses you or your use.
+
+  * No additional restrictions — You may not apply legal terms or
+    technological measures that legally restrict others from doing
+    anything the license permits.
+
+The full legal text is available at:
+https://creativecommons.org/licenses/by/4.0/legalcode
+
+For a human-readable summary:
+https://creativecommons.org/licenses/by/4.0/
+
+How to attribute the Lemma cards corpus
+---------------------------------------
+
+When citing one or more cards from this corpus, include:
+
+  * Author(s) of the specific card(s) (see the `references[]` and
+    `contributors[]` fields in each card JSON)
+  * The card id and version
+  * A link to the source repository
+
+Example:
+
+  Lindhard Susceptibility card, version 0.1.0, Lemma cards corpus,
+  Atomira Technologies, S.L., 2026.
+  Available at https://github.com/artano-ai/lemma/cards/physics/
+  condensed-matter/lindhard-susceptibility.json

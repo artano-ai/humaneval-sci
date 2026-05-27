@@ -1,0 +1,58 @@
+{
+  "id": "cauchy-schwarz-tightness-py",
+  "card_ids": ["cauchy-schwarz-inequality"],
+  "domain": "mathematics-analysis",
+  "language": "python",
+  "prompt": "The Cauchy-Schwarz inequality |<u, v>| <= ||u|| ||v|| holds for any two vectors in an inner-product space, with equality iff u and v are linearly dependent. Define the Cauchy-Schwarz tightness ratio t(u, v) = |<u, v>| / (||u|| · ||v||). This lies in [0, 1]: t = 1 when u, v are colinear (saturates the inequality); t = 0 when u perpendicular v. (Equivalent to |cos(theta)| of the angle between u and v.) Write a Python function `cauchy_schwarz_tightness(u, v)` that returns t for two equal-length list-of-floats inputs. Raise ValueError if len(u) != len(v), if either has length 0, or if either has zero Euclidean norm.",
+  "reference_solution": "import math\n\ndef cauchy_schwarz_tightness(u, v) -> float:\n    if len(u) != len(v):\n        raise ValueError(\"u and v must have the same length\")\n    if len(u) == 0:\n        raise ValueError(\"vectors must be non-empty\")\n    dot = sum(a * b for a, b in zip(u, v))\n    nu = math.sqrt(sum(a * a for a in u))\n    nv = math.sqrt(sum(b * b for b in v))\n    if nu == 0 or nv == 0:\n        raise ValueError(\"vectors must have nonzero norm\")\n    return abs(dot) / (nu * nv)\n",
+  "test_cases": [
+    {
+      "name": "parallel_vectors_saturates",
+      "description": "u = [1, 2, 3], v = 2·u → t = 1 (Cauchy-Schwarz is tight).",
+      "inputs": { "u": [1.0, 2.0, 3.0], "v": [2.0, 4.0, 6.0] },
+      "expected": { "t_within_eps": [0.99999999, 1.00000001] }
+    },
+    {
+      "name": "orthogonal_vectors_zero",
+      "description": "Standard basis e_1 ⊥ e_2 → t = 0.",
+      "inputs": { "u": [1.0, 0.0], "v": [0.0, 1.0] },
+      "expected": { "t_within_eps": [-1.0e-12, 1.0e-12] }
+    },
+    {
+      "name": "forty_five_degrees",
+      "description": "u along x-axis, v = (1, 1) → t = cos(pi/4) = 1/sqrt(2) ≈ 0.7071.",
+      "inputs": { "u": [1.0, 0.0], "v": [1.0, 1.0] },
+      "expected": { "t_within_eps": [0.70710676, 0.70710680] }
+    },
+    {
+      "name": "anti_parallel_still_saturates",
+      "description": "u = [1, 1, 1], v = [-2, -2, -2] → t = 1 (since |<u,v>| not <u,v>).",
+      "inputs": { "u": [1.0, 1.0, 1.0], "v": [-2.0, -2.0, -2.0] },
+      "expected": { "t_within_eps": [0.99999999, 1.00000001] }
+    },
+    {
+      "name": "rejects_length_mismatch",
+      "inputs": { "u": [1.0, 0.0], "v": [1.0, 0.0, 0.0] },
+      "expected": { "raises": "ValueError" }
+    },
+    {
+      "name": "rejects_zero_vector",
+      "inputs": { "u": [0.0, 0.0], "v": [1.0, 1.0] },
+      "expected": { "raises": "ValueError" }
+    }
+  ],
+  "verification_targets": {
+    "dimensional": {
+      "lhs_label": "t  [dimensionless]",
+      "lhs_dims": {},
+      "rhs_label": "|<u,v>| / (||u||·||v||)  [(scalar)/(scalar·scalar) = dimensionless]",
+      "rhs_dims": {}
+    },
+    "limits": [
+      "u colinear with v: t = 1 (CS saturates).",
+      "u perpendicular to v: t = 0.",
+      "0 <= t <= 1 for any (nonzero) u, v in an inner-product space."
+    ],
+    "validation_envelopes": {}
+  }
+}

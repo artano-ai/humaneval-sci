@@ -1,0 +1,60 @@
+{
+  "id": "fermi-energy-3d-free-electron-py",
+  "card_ids": ["density-of-states"],
+  "domain": "physics-condensed-matter",
+  "language": "python",
+  "prompt": "Write a Python function `fermi_energy_3d_free_electron(n)` that returns the Fermi energy E_F (in Joules) of a 3D free-electron gas with electron number density n (in 1/m^3). The formula: E_F = (hbar^2 / (2 m_e)) * (3 pi^2 n)^(2/3). Use hbar = 1.054571817e-34 J·s and m_e = 9.1093837e-31 kg. This is the textbook free-electron-model result obtained by integrating the 3D parabolic density of states up to the highest filled level. Inputs: n > 0 (1/m^3). Raise ValueError if n <= 0.",
+  "reference_solution": "import math\n\ndef fermi_energy_3d_free_electron(n: float) -> float:\n    hbar = 1.054571817e-34\n    m_e = 9.1093837e-31\n    if n <= 0:\n        raise ValueError(\"n must be positive\")\n    return (hbar * hbar / (2.0 * m_e)) * (3.0 * math.pi * math.pi * n) ** (2.0 / 3.0)\n",
+  "test_cases": [
+    {
+      "name": "copper_density",
+      "description": "Cu free-electron density n = 8.47e28 m^-3 → E_F ≈ 1.127e-18 J ≈ 7.03 eV (textbook value).",
+      "inputs": { "n": 8.47e28 },
+      "expected": { "E_F_J_within_eps": [1.123e-18, 1.131e-18] }
+    },
+    {
+      "name": "gold_density",
+      "description": "Au n = 5.90e28 m^-3 → E_F ≈ 8.85e-19 J ≈ 5.53 eV.",
+      "inputs": { "n": 5.90e28 },
+      "expected": { "E_F_J_within_eps": [8.82e-19, 8.89e-19] }
+    },
+    {
+      "name": "aluminium_density",
+      "description": "Al n = 18.1e28 m^-3 → E_F ≈ 1.87e-18 J ≈ 11.67 eV.",
+      "inputs": { "n": 18.1e28 },
+      "expected": { "E_F_J_within_eps": [1.862e-18, 1.876e-18] }
+    },
+    {
+      "name": "low_density_limit_check",
+      "description": "Scaling: halving n by factor 8 reduces E_F by factor 4 (E_F ~ n^(2/3)). n = 1.05875e28 → E_F = E_F(Cu)/4.",
+      "inputs": { "n": 1.05875e28 },
+      "expected": { "E_F_J_within_eps": [2.80e-19, 2.83e-19] }
+    },
+    {
+      "name": "rejects_zero_density",
+      "inputs": { "n": 0.0 },
+      "expected": { "raises": "ValueError" }
+    },
+    {
+      "name": "rejects_negative_density",
+      "inputs": { "n": -1.0e28 },
+      "expected": { "raises": "ValueError" }
+    }
+  ],
+  "verification_targets": {
+    "dimensional": {
+      "lhs_label": "E_F  [J]",
+      "lhs_dims": { "L": 2, "M": 1, "T": -2 },
+      "rhs_label": "(hbar^2/(2 m_e)) (3 pi^2 n)^(2/3)  [J·s · 1/kg · (1/m^3)^(2/3) · 1/s = J]",
+      "rhs_dims": { "L": 2, "M": 1, "T": -2 }
+    },
+    "limits": [
+      "E_F ~ n^(2/3) — halving density reduces E_F by factor 2^(2/3) ≈ 1.587.",
+      "E_F → 0 as n → 0 (no electrons, no Fermi surface)."
+    ],
+    "validation_envelopes": {
+      "electronMass_kg": [9.10938e-31, 9.10939e-31],
+      "reducedPlanck_J_s": [1.054571e-34, 1.054572e-34]
+    }
+  }
+}

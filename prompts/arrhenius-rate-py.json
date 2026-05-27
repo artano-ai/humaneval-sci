@@ -1,0 +1,55 @@
+{
+  "id": "arrhenius-rate-py",
+  "card_ids": ["arrhenius-rate-law"],
+  "domain": "chemistry-kinetics",
+  "language": "python",
+  "prompt": "Write a Python function `rate_constant(A, Ea, T)` that returns the chemical-reaction rate constant k using the Arrhenius equation: k = A * exp(-Ea / (R T)). Inputs: pre-exponential factor A (same units as k, must be positive), activation energy Ea (J/mol, must be non-negative), absolute temperature T (Kelvin, must be positive). Use R = 8.314462618 J/(mol·K). Raise ValueError if A <= 0, Ea < 0, or T <= 0.",
+  "reference_solution": "import math\n\ndef rate_constant(A: float, Ea: float, T: float) -> float:\n    R = 8.314462618\n    if A <= 0:\n        raise ValueError(\"pre-exponential factor A must be positive\")\n    if Ea < 0:\n        raise ValueError(\"activation energy Ea must be non-negative\")\n    if T <= 0:\n        raise ValueError(\"temperature T must be positive (kelvin)\")\n    return A * math.exp(-Ea / (R * T))\n",
+  "test_cases": [
+    {
+      "name": "typical_organic_reaction",
+      "description": "A=1e13 s^-1, Ea=50 kJ/mol, T=300 K -> k ~ 1.97e4 s^-1.",
+      "inputs": { "A": 1.0e13, "Ea": 50000.0, "T": 300.0 },
+      "expected": { "k_within_eps": [1.9e4, 2.1e4] }
+    },
+    {
+      "name": "zero_activation_energy",
+      "description": "Ea = 0 -> k = A (no temperature dependence).",
+      "inputs": { "A": 5.0, "Ea": 0.0, "T": 300.0 },
+      "expected": { "k": 5.0, "atol": 1e-12 }
+    },
+    {
+      "name": "rule_of_thumb_doubles_per_10K",
+      "description": "For Ea ~ 50 kJ/mol, k roughly doubles per 10 K increase near room temperature.",
+      "inputs_a": { "A": 1.0e13, "Ea": 50000.0, "T": 298.0 },
+      "inputs_b": { "A": 1.0e13, "Ea": 50000.0, "T": 308.0 },
+      "expected": { "k_b_over_k_a": [1.85, 2.20] }
+    },
+    {
+      "name": "rejects_negative_activation_energy",
+      "inputs": { "A": 1.0e13, "Ea": -100.0, "T": 300.0 },
+      "expected": { "raises": "ValueError" }
+    },
+    {
+      "name": "rejects_zero_temperature",
+      "inputs": { "A": 1.0e13, "Ea": 50000.0, "T": 0.0 },
+      "expected": { "raises": "ValueError" }
+    }
+  ],
+  "verification_targets": {
+    "dimensional": {
+      "lhs_label": "k  [same units as A]",
+      "lhs_dims": { "T": -1 },
+      "rhs_label": "A exp(-Ea / (R T))  [same units as A]",
+      "rhs_dims": { "T": -1 }
+    },
+    "limits": [
+      "Ea -> 0:  k -> A  (temperature-independent)",
+      "T -> infinity:  k -> A  (high-T limit, exponential -> 1)",
+      "T -> 0+:  k -> 0  (low-T limit, exponential -> 0)"
+    ],
+    "validation_envelopes": {
+      "gasConstantR_J_per_mol_K": [8.31446, 8.31447]
+    }
+  }
+}

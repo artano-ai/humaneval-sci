@@ -1,0 +1,51 @@
+{
+  "id": "allele-frequency-from-genotypes-py",
+  "card_ids": ["hardy-weinberg-equilibrium"],
+  "domain": "biology-population-genetics",
+  "language": "python",
+  "prompt": "Write a Python function `allele_frequency_A(n_AA, n_Aa, n_aa)` that returns the frequency p of allele A in a population given the counts of the three diploid genotypes: p = (2 n_AA + n_Aa) / (2 (n_AA + n_Aa + n_aa)). Inputs: non-negative integer counts. Raise ValueError if any count is negative or if the total population is zero.",
+  "reference_solution": "def allele_frequency_A(n_AA: float, n_Aa: float, n_aa: float) -> float:\n    if n_AA < 0 or n_Aa < 0 or n_aa < 0:\n        raise ValueError(\"genotype counts must be non-negative\")\n    total = n_AA + n_Aa + n_aa\n    if total <= 0:\n        raise ValueError(\"total population must be positive\")\n    return (2.0 * n_AA + n_Aa) / (2.0 * total)\n",
+  "test_cases": [
+    {
+      "name": "round_trip_equal_freq",
+      "description": "1:2:1 counts -> p = 0.5 (Hardy-Weinberg balance at p=0.5).",
+      "inputs": { "n_AA": 25.0, "n_Aa": 50.0, "n_aa": 25.0 },
+      "expected": { "p": 0.5, "atol": 1e-12 }
+    },
+    {
+      "name": "all_homozygous_AA",
+      "inputs": { "n_AA": 100.0, "n_Aa": 0.0, "n_aa": 0.0 },
+      "expected": { "p": 1.0, "atol": 1e-12 }
+    },
+    {
+      "name": "all_homozygous_aa",
+      "inputs": { "n_AA": 0.0, "n_Aa": 0.0, "n_aa": 100.0 },
+      "expected": { "p": 0.0, "atol": 1e-12 }
+    },
+    {
+      "name": "rare_allele",
+      "description": "1 AA + 18 Aa + 81 aa -> p = (2 + 18)/(200) = 0.1.",
+      "inputs": { "n_AA": 1.0, "n_Aa": 18.0, "n_aa": 81.0 },
+      "expected": { "p_within_eps": [0.0999, 0.1001] }
+    },
+    {
+      "name": "rejects_zero_population",
+      "inputs": { "n_AA": 0.0, "n_Aa": 0.0, "n_aa": 0.0 },
+      "expected": { "raises": "ValueError" }
+    }
+  ],
+  "verification_targets": {
+    "dimensional": {
+      "lhs_label": "p  [dimensionless]",
+      "lhs_dims": {},
+      "rhs_label": "(2 n_AA + n_Aa) / (2 N)  [dimensionless]",
+      "rhs_dims": {}
+    },
+    "limits": [
+      "n_aa = 0 and n_Aa = 0:  p = 1  (allele A fixed)",
+      "n_AA = 0 and n_Aa = 0:  p = 0  (allele A extinct)",
+      "Hardy-Weinberg consistency:  if input matches (p^2, 2pq, q^2) ratios, output equals the original p"
+    ],
+    "conservation_laws": ["particle-number"]
+  }
+}

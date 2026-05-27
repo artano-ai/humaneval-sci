@@ -1,0 +1,44 @@
+{
+  "id": "mean-value-secant-slope-py",
+  "card_ids": ["mean-value-theorem"],
+  "domain": "mathematics-analysis",
+  "language": "python",
+  "prompt": "Write a Python function `secant_slope(x1, y1, x2, y2)` that returns the average rate of change (f(x2) - f(x1)) / (x2 - x1) of a function sampled at two points (x1, y1) and (x2, y2). The Mean Value Theorem guarantees that for any function continuous on [x1, x2] and differentiable on (x1, x2), there exists at least one c in (x1, x2) where f'(c) equals this slope. The function itself just computes the secant slope. Raise ValueError if x1 == x2.",
+  "reference_solution": "def secant_slope(x1: float, y1: float, x2: float, y2: float) -> float:\n    if x1 == x2:\n        raise ValueError(\"x1 and x2 must differ for the secant slope to be defined\")\n    return (y2 - y1) / (x2 - x1)\n",
+  "test_cases": [
+    {
+      "name": "x_squared_from_1_to_3",
+      "description": "For f(x) = x^2: secant slope on [1, 3] = (9 - 1)/(3 - 1) = 4. MVT guarantees a c in (1,3) where 2c = 4, i.e. c = 2.",
+      "inputs": { "x1": 1.0, "y1": 1.0, "x2": 3.0, "y2": 9.0 },
+      "expected": { "slope": 4.0, "atol": 1e-12 }
+    },
+    {
+      "name": "constant_function_zero_slope",
+      "inputs": { "x1": 0.0, "y1": 5.0, "x2": 10.0, "y2": 5.0 },
+      "expected": { "slope": 0.0, "atol": 1e-12 }
+    },
+    {
+      "name": "negative_slope",
+      "inputs": { "x1": 0.0, "y1": 10.0, "x2": 2.0, "y2": 4.0 },
+      "expected": { "slope": -3.0, "atol": 1e-12 }
+    },
+    {
+      "name": "rejects_same_x",
+      "description": "x1 == x2 makes the secant slope undefined.",
+      "inputs": { "x1": 1.0, "y1": 1.0, "x2": 1.0, "y2": 2.0 },
+      "expected": { "raises": "ValueError" }
+    }
+  ],
+  "verification_targets": {
+    "dimensional": {
+      "lhs_label": "df/dx  [units(f)/units(x)]",
+      "lhs_dims": {},
+      "rhs_label": "(y2 - y1)/(x2 - x1)  [units(f)/units(x)]",
+      "rhs_dims": {}
+    },
+    "limits": [
+      "y1 = y2:  slope = 0  (no change over the interval)",
+      "x2 -> x1:  slope -> f'(c) for c in (x1, x2) — the MVT guarantee"
+    ]
+  }
+}

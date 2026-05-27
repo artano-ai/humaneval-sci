@@ -1,0 +1,46 @@
+{
+  "id": "henderson-hasselbalch-py",
+  "card_ids": ["henderson-hasselbalch-equation"],
+  "domain": "chemistry-equilibrium",
+  "language": "python",
+  "prompt": "Write a Python function `buffer_ph(pKa, conjugate_base_M, acid_M)` that returns the pH of an aqueous buffer solution using the Henderson-Hasselbalch equation: pH = pKa + log10([A-] / [HA]). Inputs: pKa of the weak acid (dimensionless), molar concentration of conjugate base [A-] (mol/L, must be positive), molar concentration of acid [HA] (mol/L, must be positive). Raise ValueError if conjugate_base_M <= 0 or acid_M <= 0.",
+  "reference_solution": "import math\n\ndef buffer_ph(pKa: float, conjugate_base_M: float, acid_M: float) -> float:\n    if conjugate_base_M <= 0:\n        raise ValueError(\"conjugate base concentration must be positive\")\n    if acid_M <= 0:\n        raise ValueError(\"acid concentration must be positive\")\n    return pKa + math.log10(conjugate_base_M / acid_M)\n",
+  "test_cases": [
+    {
+      "name": "equimolar_buffer",
+      "description": "[A-] = [HA] => pH = pKa exactly.",
+      "inputs": { "pKa": 4.76, "conjugate_base_M": 0.1, "acid_M": 0.1 },
+      "expected": { "pH": 4.76, "atol": 1e-9 }
+    },
+    {
+      "name": "tenfold_base_excess",
+      "description": "[A-] / [HA] = 10 -> pH = pKa + 1.",
+      "inputs": { "pKa": 4.76, "conjugate_base_M": 1.0, "acid_M": 0.1 },
+      "expected": { "pH_within_eps": [5.7599, 5.7601] }
+    },
+    {
+      "name": "tenfold_acid_excess",
+      "description": "[HA] / [A-] = 10 -> pH = pKa - 1.",
+      "inputs": { "pKa": 4.76, "conjugate_base_M": 0.1, "acid_M": 1.0 },
+      "expected": { "pH_within_eps": [3.7599, 3.7601] }
+    },
+    {
+      "name": "rejects_zero_acid",
+      "inputs": { "pKa": 4.76, "conjugate_base_M": 0.1, "acid_M": 0.0 },
+      "expected": { "raises": "ValueError" }
+    }
+  ],
+  "verification_targets": {
+    "dimensional": {
+      "lhs_label": "pH  [dimensionless]",
+      "lhs_dims": {},
+      "rhs_label": "pKa + log10([A-]/[HA])  [dimensionless]",
+      "rhs_dims": {}
+    },
+    "limits": [
+      "[A-] = [HA]:  pH = pKa  (definition of pKa)",
+      "[A-] / [HA] = 10:  pH = pKa + 1",
+      "[A-] / [HA] = 0.1:  pH = pKa - 1"
+    ]
+  }
+}

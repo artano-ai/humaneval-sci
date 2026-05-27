@@ -1,0 +1,46 @@
+{
+  "id": "vector-triangle-inequality-py",
+  "card_ids": ["triangle-inequality"],
+  "domain": "mathematics-analysis",
+  "language": "python",
+  "prompt": "Write a Python function `vector_triangle_holds(u, v)` that returns True iff the triangle inequality ||u + v|| <= ||u|| + ||v|| holds for two real vectors u and v passed as lists or 1-D numpy arrays of the same length. For finite real vectors this is always True (it is a theorem, not a condition to test); the function is for validating implementations and probing the equality case (u and v parallel and same-sign). Raise ValueError on shape mismatch. Use a tolerance of 1e-12 in the comparison.",
+  "reference_solution": "import numpy as np\n\ndef vector_triangle_holds(u, v) -> bool:\n    u = np.asarray(u, dtype=float)\n    v = np.asarray(v, dtype=float)\n    if u.shape != v.shape:\n        raise ValueError(\"u and v must have the same shape\")\n    lhs = float(np.linalg.norm(u + v))\n    rhs = float(np.linalg.norm(u) + np.linalg.norm(v))\n    return lhs <= rhs + 1e-12\n",
+  "test_cases": [
+    {
+      "name": "parallel_same_direction_equality",
+      "description": "u and v parallel same-direction saturate the inequality (still True).",
+      "inputs": { "u": [1.0, 2.0], "v": [2.0, 4.0] },
+      "expected": { "holds": true, "atol": 0 }
+    },
+    {
+      "name": "antiparallel_strict_inequality",
+      "description": "u and -u: ||u-u|| = 0 < 2 ||u||.",
+      "inputs": { "u": [3.0, 4.0], "v": [-3.0, -4.0] },
+      "expected": { "holds": true, "atol": 0 }
+    },
+    {
+      "name": "orthogonal_strict_inequality",
+      "description": "Pythagoras: ||u+v||=sqrt(2)|u| < 2|u| = |u|+|v|.",
+      "inputs": { "u": [1.0, 0.0], "v": [0.0, 1.0] },
+      "expected": { "holds": true, "atol": 0 }
+    },
+    {
+      "name": "rejects_shape_mismatch",
+      "inputs": { "u": [1.0, 2.0], "v": [1.0, 2.0, 3.0] },
+      "expected": { "raises": "ValueError" }
+    }
+  ],
+  "verification_targets": {
+    "dimensional": {
+      "lhs_label": "predicate  [dimensionless]",
+      "lhs_dims": {},
+      "rhs_label": "||u+v|| <= ||u|| + ||v||  [dimensionless]",
+      "rhs_dims": {}
+    },
+    "limits": [
+      "u parallel to v (same direction):  ||u+v|| = ||u|| + ||v||  (equality)",
+      "u antiparallel to v:  ||u+v|| = | ||u|| - ||v|| |  (lower bound of strict inequality)",
+      "u orthogonal to v:  ||u+v|| = sqrt(||u||^2 + ||v||^2)  (Pythagorean)"
+    ]
+  }
+}

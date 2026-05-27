@@ -1,0 +1,61 @@
+{
+  "id": "stefan-boltzmann-earth-temperature-py",
+  "card_ids": ["stefan-boltzmann-radiation"],
+  "domain": "climate-radiative",
+  "language": "python",
+  "prompt": "Compute the radiative equilibrium temperature of a planet whose surface radiates as a graybody. Energy balance: absorbed insolation = thermal emission. (1 - A) * S / 4 = ε * σ * T^4 → T = ((1 - A) * S / (4 * ε * σ))^(1/4). The factor of 4 comes from disk-of-sunlight (cross-section pi R^2) vs sphere-emitting surface (4 pi R^2). Use σ = 5.670374419e-8 W/(m²·K^4). Write a Python function `earth_equilibrium_temperature(S, albedo, emissivity)` that returns T in K. Inputs: S > 0 (solar constant, W/m²); 0 <= albedo < 1 (dimensionless); 0 < emissivity <= 1 (dimensionless). Raise ValueError on any out-of-range input. Note: the famous textbook result for Earth (S=1361, A=0.3, ε=1) is ~254.5 K — well below the observed 288 K — and the gap is the greenhouse effect, captured by ε < 1.",
+  "reference_solution": "def earth_equilibrium_temperature(S: float, albedo: float, emissivity: float) -> float:\n    sigma = 5.670374419e-8\n    if S <= 0:\n        raise ValueError(\"S must be positive\")\n    if albedo < 0 or albedo >= 1:\n        raise ValueError(\"albedo must be in [0, 1)\")\n    if emissivity <= 0 or emissivity > 1:\n        raise ValueError(\"emissivity must be in (0, 1]\")\n    return ((1.0 - albedo) * S / (4.0 * emissivity * sigma)) ** 0.25\n",
+  "test_cases": [
+    {
+      "name": "classical_earth_blackbody_no_greenhouse",
+      "description": "S = 1361, A = 0.3, ε = 1: T ≈ 254.58 K (textbook ~255 K).",
+      "inputs": { "S": 1361.0, "albedo": 0.3, "emissivity": 1.0 },
+      "expected": { "T_K_within_eps": [254.4, 254.7] }
+    },
+    {
+      "name": "earth_with_greenhouse_emissivity_0_612",
+      "description": "ε = 0.612 reproduces the observed surface temperature 287.83 K.",
+      "inputs": { "S": 1361.0, "albedo": 0.3, "emissivity": 0.612 },
+      "expected": { "T_K_within_eps": [287.7, 287.95] }
+    },
+    {
+      "name": "perfect_absorber_no_albedo",
+      "description": "A = 0, ε = 1: T = (S/(4σ))^(1/4) ≈ 278.32 K.",
+      "inputs": { "S": 1361.0, "albedo": 0.0, "emissivity": 1.0 },
+      "expected": { "T_K_within_eps": [278.2, 278.4] }
+    },
+    {
+      "name": "snowball_earth_high_albedo",
+      "description": "A = 0.6 (icy planet), ε = 1: T ≈ 221.34 K.",
+      "inputs": { "S": 1361.0, "albedo": 0.6, "emissivity": 1.0 },
+      "expected": { "T_K_within_eps": [221.2, 221.5] }
+    },
+    {
+      "name": "rejects_albedo_one",
+      "description": "A = 1 means 100% reflection → no absorbed flux → unphysical T = 0. We require A < 1.",
+      "inputs": { "S": 1361.0, "albedo": 1.0, "emissivity": 1.0 },
+      "expected": { "raises": "ValueError" }
+    },
+    {
+      "name": "rejects_zero_emissivity",
+      "inputs": { "S": 1361.0, "albedo": 0.3, "emissivity": 0.0 },
+      "expected": { "raises": "ValueError" }
+    }
+  ],
+  "verification_targets": {
+    "dimensional": {
+      "lhs_label": "T  [K]",
+      "lhs_dims": { "Θ": 1 },
+      "rhs_label": "((1-A) S / (4 ε σ))^(1/4)  [(W/m²) / (W/(m²·K⁴)))^(1/4) = K]",
+      "rhs_dims": { "Θ": 1 }
+    },
+    "limits": [
+      "ε = 1: T = T_blackbody(A) (pure Stefan-Boltzmann limit).",
+      "ε → 0+: T → infinity (vanishing emissivity cannot shed heat).",
+      "A → 1-: T → 0 (no absorbed flux)."
+    ],
+    "validation_envelopes": {
+      "stefan_boltzmann_W_per_m2_K4": [5.670373e-8, 5.670376e-8]
+    }
+  }
+}

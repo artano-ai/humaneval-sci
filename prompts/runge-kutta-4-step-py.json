@@ -1,0 +1,51 @@
+{
+  "id": "runge-kutta-4-step-py",
+  "card_ids": ["runge-kutta-4"],
+  "domain": "numerical-methods-ode",
+  "language": "python",
+  "prompt": "Write a Python function `rk4_step_exp_decay(y, h, k=1.0)` that performs one classical 4th-order Runge-Kutta step for the ODE dy/dt = -k y, returning y at t+h given y at t. Standard RK4: k1 = -k*y; k2 = -k*(y + h*k1/2); k3 = -k*(y + h*k2/2); k4 = -k*(y + h*k3); y_next = y + (h/6)*(k1 + 2*k2 + 2*k3 + k4). Inputs: y (any real), h (step size, must be positive), k (decay rate, must be positive, default 1.0). Raise ValueError if h <= 0 or k <= 0.",
+  "reference_solution": "def rk4_step_exp_decay(y: float, h: float, k: float = 1.0) -> float:\n    if h <= 0:\n        raise ValueError(\"step size h must be positive\")\n    if k <= 0:\n        raise ValueError(\"decay rate k must be positive\")\n    k1 = -k * y\n    k2 = -k * (y + h * k1 / 2.0)\n    k3 = -k * (y + h * k2 / 2.0)\n    k4 = -k * (y + h * k3)\n    return y + (h / 6.0) * (k1 + 2.0 * k2 + 2.0 * k3 + k4)\n",
+  "test_cases": [
+    {
+      "name": "one_step_h_0p1_matches_exp",
+      "description": "RK4 step from y=1 with h=0.1 should match exp(-0.1) ≈ 0.904837 to O(h^5).",
+      "inputs": { "y": 1.0, "h": 0.1, "k": 1.0 },
+      "expected": { "y_next_within_eps": [0.9048, 0.9049] }
+    },
+    {
+      "name": "small_step_high_accuracy",
+      "description": "h = 0.01 step: y_next ≈ exp(-0.01) ≈ 0.99004983.",
+      "inputs": { "y": 1.0, "h": 0.01, "k": 1.0 },
+      "expected": { "y_next_within_eps": [0.990048, 0.99005] }
+    },
+    {
+      "name": "y_zero_is_fixed_point",
+      "description": "y = 0 is an equilibrium of exponential decay — must stay zero.",
+      "inputs": { "y": 0.0, "h": 0.5, "k": 2.0 },
+      "expected": { "y_next": 0.0, "atol": 1e-12 }
+    },
+    {
+      "name": "rejects_zero_step",
+      "inputs": { "y": 1.0, "h": 0.0, "k": 1.0 },
+      "expected": { "raises": "ValueError" }
+    },
+    {
+      "name": "rejects_negative_rate",
+      "inputs": { "y": 1.0, "h": 0.1, "k": -1.0 },
+      "expected": { "raises": "ValueError" }
+    }
+  ],
+  "verification_targets": {
+    "dimensional": {
+      "lhs_label": "y(t+h)  [units(y)]",
+      "lhs_dims": {},
+      "rhs_label": "y(t) + h/6 (k1 + 2k2 + 2k3 + k4)  [units(y)]",
+      "rhs_dims": {}
+    },
+    "limits": [
+      "h -> 0:  y_next -> y  (no evolution in zero time)",
+      "y = 0:  y_next = 0  (fixed point of dy/dt = -k y)",
+      "h*k << 1:  global error O(h^4), local error O(h^5)"
+    ]
+  }
+}

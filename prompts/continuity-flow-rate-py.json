@@ -1,0 +1,46 @@
+{
+  "id": "continuity-flow-rate-py",
+  "card_ids": ["continuity-equation"],
+  "domain": "physics-fluid-dynamics",
+  "language": "python",
+  "prompt": "Write a Python function `flow_velocity_after_narrowing(A1, v1, A2)` that returns the downstream velocity v2 (m/s) of an incompressible steady flow passing from cross-sectional area A1 to A2, by the continuity equation A1 v1 = A2 v2. Inputs: A1, A2 (m^2, positive), v1 (m/s, any sign). Raise ValueError if A1 <= 0 or A2 <= 0.",
+  "reference_solution": "def flow_velocity_after_narrowing(A1: float, v1: float, A2: float) -> float:\n    if A1 <= 0:\n        raise ValueError(\"A1 must be positive\")\n    if A2 <= 0:\n        raise ValueError(\"A2 must be positive\")\n    return A1 * v1 / A2\n",
+  "test_cases": [
+    {
+      "name": "halving_area_doubles_speed",
+      "inputs": { "A1": 1.0, "v1": 1.0, "A2": 0.5 },
+      "expected": { "v2": 2.0, "atol": 1e-12 }
+    },
+    {
+      "name": "equal_areas_same_speed",
+      "inputs": { "A1": 0.05, "v1": 3.0, "A2": 0.05 },
+      "expected": { "v2": 3.0, "atol": 1e-12 }
+    },
+    {
+      "name": "expansion_slows_flow",
+      "description": "Quadrupling the area quarters the speed.",
+      "inputs_a": { "A1": 1.0, "v1": 4.0, "A2": 1.0 },
+      "inputs_b": { "A1": 1.0, "v1": 4.0, "A2": 4.0 },
+      "expected": { "v2_b_over_v2_a": [0.249, 0.251] }
+    },
+    {
+      "name": "rejects_zero_downstream_area",
+      "inputs": { "A1": 1.0, "v1": 1.0, "A2": 0.0 },
+      "expected": { "raises": "ValueError" }
+    }
+  ],
+  "verification_targets": {
+    "dimensional": {
+      "lhs_label": "v2  [m/s]",
+      "lhs_dims": { "L": 1, "T": -1 },
+      "rhs_label": "A1 v1 / A2  [m/s]",
+      "rhs_dims": { "L": 1, "T": -1 }
+    },
+    "limits": [
+      "A2 = A1:  v2 = v1  (no area change, no acceleration)",
+      "A2 -> 0:  v2 -> infinity  (singular at a closed cross-section, must raise)",
+      "A2 -> infinity:  v2 -> 0  (flow stagnates in an infinite reservoir)"
+    ],
+    "conservation_laws": ["particle-number"]
+  }
+}

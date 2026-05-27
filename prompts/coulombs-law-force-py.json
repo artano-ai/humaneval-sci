@@ -1,0 +1,50 @@
+{
+  "id": "coulombs-law-force-py",
+  "card_ids": ["coulombs-law-point-charges"],
+  "domain": "physics-electromagnetism",
+  "language": "python",
+  "prompt": "Write a Python function `coulomb_force(q1, q2, r)` that returns the magnitude of the electrostatic force between two point charges, with a sign indicating attraction (negative) or repulsion (positive). Inputs: q1, q2 (Coulombs, may be negative), r (meters, must be positive). Use Coulomb's constant k = 8.9875517923e9 N·m^2/C^2. Formula: F = k * q1 * q2 / r^2. Raise ValueError if r <= 0.",
+  "reference_solution": "def coulomb_force(q1: float, q2: float, r: float) -> float:\n    k = 8.9875517923e9\n    if r <= 0:\n        raise ValueError(\"separation r must be positive\")\n    return k * q1 * q2 / (r * r)\n",
+  "test_cases": [
+    {
+      "name": "unit_charges_unit_distance",
+      "description": "1 C charges 1 m apart -> ~8.99e9 N (repulsion).",
+      "inputs": { "q1": 1.0, "q2": 1.0, "r": 1.0 },
+      "expected": { "F_within_eps": [8.9875e9, 8.9876e9] }
+    },
+    {
+      "name": "opposite_charges_attract",
+      "description": "Opposite-sign charges yield a negative (attractive) value.",
+      "inputs": { "q1": 1.0, "q2": -1.0, "r": 1.0 },
+      "expected": { "F_within_eps": [-8.9876e9, -8.9875e9] }
+    },
+    {
+      "name": "inverse_square_at_double_distance",
+      "description": "Doubling r quarters the force (1/r^2).",
+      "inputs_a": { "q1": 1e-6, "q2": 1e-6, "r": 1.0 },
+      "inputs_b": { "q1": 1e-6, "q2": 1e-6, "r": 2.0 },
+      "expected": { "F_b_over_F_a": [0.249, 0.251] }
+    },
+    {
+      "name": "rejects_zero_distance",
+      "description": "r=0 is singular and must raise.",
+      "inputs": { "q1": 1.0, "q2": 1.0, "r": 0.0 },
+      "expected": { "raises": "ValueError" }
+    }
+  ],
+  "verification_targets": {
+    "dimensional": {
+      "lhs_label": "F  [N]",
+      "lhs_dims": { "L": 1, "M": 1, "T": -2 },
+      "rhs_label": "k q1 q2 / r^2  [N]",
+      "rhs_dims": { "L": 1, "M": 1, "T": -2 }
+    },
+    "limits": [
+      "r -> infinity:  F -> 0  (force vanishes at large separation)",
+      "q2 -> -q1:  F -> -F  (sign flip with charge sign flip)"
+    ],
+    "validation_envelopes": {
+      "coulombConstant_N_m2_per_C2": [8.9875517e9, 8.9875518e9]
+    }
+  }
+}

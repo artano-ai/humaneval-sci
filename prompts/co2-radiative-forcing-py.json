@@ -1,0 +1,56 @@
+{
+  "id": "co2-radiative-forcing-py",
+  "card_ids": ["co2-greenhouse-forcing"],
+  "domain": "climate-radiative-forcing",
+  "language": "python",
+  "prompt": "Write a Python function `co2_radiative_forcing(C, C0=278.0)` that returns the radiative forcing ΔF (W/m^2) from a change in atmospheric CO2 concentration, using the simplified logarithmic expression from Myhre et al. (1998): ΔF = 5.35 * ln(C / C0). Inputs: current CO2 concentration C (ppm, must be positive), pre-industrial reference C0 (ppm, default 278, must be positive). Raise ValueError if C <= 0 or C0 <= 0.",
+  "reference_solution": "import math\n\ndef co2_radiative_forcing(C: float, C0: float = 278.0) -> float:\n    if C <= 0:\n        raise ValueError(\"CO2 concentration C must be positive (ppm)\")\n    if C0 <= 0:\n        raise ValueError(\"reference concentration C0 must be positive (ppm)\")\n    return 5.35 * math.log(C / C0)\n",
+  "test_cases": [
+    {
+      "name": "preindustrial_zero_forcing",
+      "description": "C = C0 -> ΔF = 0 (no anomaly).",
+      "inputs": { "C": 278.0, "C0": 278.0 },
+      "expected": { "F": 0.0, "atol": 1e-12 }
+    },
+    {
+      "name": "co2_doubling",
+      "description": "Doubling CO2 from pre-industrial -> ΔF ≈ 3.71 W/m^2 (IPCC AR5 reference).",
+      "inputs": { "C": 556.0, "C0": 278.0 },
+      "expected": { "F_within_eps": [3.70, 3.72] }
+    },
+    {
+      "name": "modern_co2",
+      "description": "~420 ppm (modern) vs 278 (pre-industrial) -> ~2.21 W/m^2.",
+      "inputs": { "C": 420.0, "C0": 278.0 },
+      "expected": { "F_within_eps": [2.20, 2.22] }
+    },
+    {
+      "name": "halving_co2_gives_negative_forcing",
+      "description": "C = C0/2 -> ΔF = -5.35 * ln(2) ≈ -3.71 W/m^2.",
+      "inputs": { "C": 139.0, "C0": 278.0 },
+      "expected": { "F_within_eps": [-3.72, -3.70] }
+    },
+    {
+      "name": "rejects_zero_concentration",
+      "inputs": { "C": 0.0, "C0": 278.0 },
+      "expected": { "raises": "ValueError" }
+    }
+  ],
+  "verification_targets": {
+    "dimensional": {
+      "lhs_label": "ΔF  [W/m^2]",
+      "lhs_dims": { "M": 1, "T": -3 },
+      "rhs_label": "5.35 ln(C / C0)  [W/m^2]",
+      "rhs_dims": { "M": 1, "T": -3 }
+    },
+    "limits": [
+      "C = C0:  ΔF = 0  (definition of the pre-industrial baseline)",
+      "C = 2 C0:  ΔF = 5.35 ln 2 ≈ 3.71 W/m^2  (CO2 doubling, IPCC reference)",
+      "C -> 0+:  ΔF -> -infinity  (log singularity; physical limit not reachable on Earth)"
+    ],
+    "validation_envelopes": {
+      "co2DoublingForcing_W_per_m2": [3.7, 3.72],
+      "preindustrialCO2_ppm": [275.0, 280.0]
+    }
+  }
+}

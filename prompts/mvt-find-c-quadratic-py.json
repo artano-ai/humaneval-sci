@@ -1,0 +1,45 @@
+{
+  "id": "mvt-find-c-quadratic-py",
+  "card_ids": ["mean-value-theorem"],
+  "domain": "mathematics-analysis",
+  "language": "python",
+  "prompt": "Write a Python function `mvt_c_for_quadratic(a, b, c0, x1, x2)` that returns the point c in (x1, x2) guaranteed by the Mean Value Theorem for the quadratic f(x) = a x^2 + b x + c0 on the closed interval [x1, x2]. Derivation: f'(x) = 2 a x + b; the secant slope on [x1, x2] is a (x1 + x2) + b. Setting f'(c) equal to the secant slope yields c = (x1 + x2) / 2 (independent of a, b, c0 — the MVT point of a parabola is always the midpoint). Raise ValueError if x1 == x2.",
+  "reference_solution": "def mvt_c_for_quadratic(a: float, b: float, c0: float, x1: float, x2: float) -> float:\n    if x1 == x2:\n        raise ValueError(\"x1 and x2 must differ\")\n    return 0.5 * (x1 + x2)\n",
+  "test_cases": [
+    {
+      "name": "x_squared_on_1_to_3",
+      "description": "f(x) = x^2, [1, 3]: secant slope = 4, f'(c) = 2c = 4 -> c = 2 = (1+3)/2.",
+      "inputs": { "a": 1.0, "b": 0.0, "c0": 0.0, "x1": 1.0, "x2": 3.0 },
+      "expected": { "c": 2.0, "atol": 1e-12 }
+    },
+    {
+      "name": "negative_quadratic_on_neg2_to_4",
+      "description": "Midpoint independent of curvature sign and shift.",
+      "inputs": { "a": -2.0, "b": 5.0, "c0": 7.0, "x1": -2.0, "x2": 4.0 },
+      "expected": { "c": 1.0, "atol": 1e-12 }
+    },
+    {
+      "name": "symmetric_around_zero",
+      "inputs": { "a": 3.0, "b": 0.0, "c0": 0.0, "x1": -1.0, "x2": 1.0 },
+      "expected": { "c": 0.0, "atol": 1e-12 }
+    },
+    {
+      "name": "rejects_degenerate_interval",
+      "inputs": { "a": 1.0, "b": 0.0, "c0": 0.0, "x1": 2.0, "x2": 2.0 },
+      "expected": { "raises": "ValueError" }
+    }
+  ],
+  "verification_targets": {
+    "dimensional": {
+      "lhs_label": "c  [same as x]",
+      "lhs_dims": {},
+      "rhs_label": "(x1 + x2) / 2  [same as x]",
+      "rhs_dims": {}
+    },
+    "limits": [
+      "x2 -> x1:  c -> x1  (trivial limit)",
+      "Verification:  f'(c) = secant slope of f over [x1, x2] for any quadratic",
+      "MVT guarantees existence; for parabolas the c is unique and equals the midpoint"
+    ]
+  }
+}

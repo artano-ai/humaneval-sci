@@ -1,0 +1,54 @@
+{
+  "id": "free-fall-max-height-py",
+  "card_ids": ["free-fall-uniform-gravity"],
+  "domain": "physics-classical-mechanics",
+  "language": "python",
+  "prompt": "Write a Python function `max_height(y0, v0, g)` that returns the maximum height (m) reached by a projectile launched vertically upward under uniform gravity. Inputs: initial height y0 (m), initial upward velocity v0 (m/s), gravitational acceleration g (m/s^2, positive). By energy conservation: y_max = y0 + v0^2 / (2 g) if v0 > 0; if v0 <= 0 the object is already at or past its peak, return y0. Raise ValueError if g <= 0.",
+  "reference_solution": "def max_height(y0: float, v0: float, g: float) -> float:\n    if g <= 0:\n        raise ValueError(\"gravitational acceleration g must be positive\")\n    if v0 <= 0:\n        return y0\n    return y0 + v0 * v0 / (2.0 * g)\n",
+  "test_cases": [
+    {
+      "name": "launched_from_ground",
+      "description": "v0=10 m/s, g=9.81 -> peak = 5.097 m.",
+      "inputs": { "y0": 0.0, "v0": 10.0, "g": 9.81 },
+      "expected": { "y_max_within_eps": [5.09, 5.11] }
+    },
+    {
+      "name": "no_initial_velocity_stays_put",
+      "description": "v0 = 0 -> already at peak, return y0.",
+      "inputs": { "y0": 5.0, "v0": 0.0, "g": 9.81 },
+      "expected": { "y_max": 5.0, "atol": 1e-12 }
+    },
+    {
+      "name": "downward_throw_returns_y0",
+      "description": "v0 < 0 means object is moving down — peak (in the past) was at y0.",
+      "inputs": { "y0": 10.0, "v0": -5.0, "g": 9.81 },
+      "expected": { "y_max": 10.0, "atol": 1e-12 }
+    },
+    {
+      "name": "quadratic_in_v0",
+      "description": "Doubling v0 quadruples the height gained above y0.",
+      "inputs_a": { "y0": 0.0, "v0": 5.0, "g": 9.81 },
+      "inputs_b": { "y0": 0.0, "v0": 10.0, "g": 9.81 },
+      "expected": { "y_max_b_over_y_max_a": [3.99, 4.01] }
+    },
+    {
+      "name": "rejects_zero_gravity",
+      "inputs": { "y0": 0.0, "v0": 10.0, "g": 0.0 },
+      "expected": { "raises": "ValueError" }
+    }
+  ],
+  "verification_targets": {
+    "dimensional": {
+      "lhs_label": "y_max  [m]",
+      "lhs_dims": { "L": 1 },
+      "rhs_label": "y0 + v0^2 / (2 g)  [m]",
+      "rhs_dims": { "L": 1 }
+    },
+    "limits": [
+      "v0 = 0:  y_max = y0  (no kinetic energy to convert)",
+      "v0^2 -> 2 g h:  fully converts KE -> PE at peak",
+      "energy_conservation: (1/2) m v0^2 = m g (y_max - y0)"
+    ],
+    "conservation_laws": ["energy"]
+  }
+}

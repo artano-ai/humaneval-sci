@@ -1,0 +1,57 @@
+{
+  "id": "eyring-vs-arrhenius-py",
+  "card_ids": ["arrhenius-rate-law"],
+  "domain": "chemistry-kinetics",
+  "language": "python",
+  "prompt": "Write a Python function `eyring_rate_constant(T, deltaH, deltaS)` that returns the Eyring (transition-state theory) rate constant k = (k_B T / h) * exp(deltaS / R) * exp(-deltaH / (R T)) in s^-1. Note: this is NOT Arrhenius — the Eyring prefactor is k_B T / h (not a constant A), and the activation energy is the enthalpy of activation deltaH plus an entropy contribution exp(deltaS/R). Constants: k_B = 1.380649e-23 J/K, h = 6.62607015e-34 J·s, R = 8.31446 J/(mol·K). Inputs: T > 0 in K; deltaH in J/mol (any sign, typically positive); deltaS in J/(mol·K) (any sign). Raise ValueError if T <= 0.",
+  "reference_solution": "import math\n\ndef eyring_rate_constant(T: float, deltaH: float, deltaS: float) -> float:\n    k_B = 1.380649e-23\n    h   = 6.62607015e-34\n    R   = 8.31446\n    if T <= 0:\n        raise ValueError(\"T must be positive\")\n    return (k_B * T / h) * math.exp(deltaS / R) * math.exp(-deltaH / (R * T))\n",
+  "test_cases": [
+    {
+      "name": "baseline_dS_zero_298K",
+      "description": "T=298 K, ΔH=50 kJ/mol, ΔS=0. Eyring → k ≈ 1.069e4 s^-1. (kT/h × exp(-50000/(8.314·298)) ≈ 6.21e12 × 1.72e-9.)",
+      "inputs": { "T": 298.0, "deltaH": 50000.0, "deltaS": 0.0 },
+      "expected": { "k_per_s_within_eps": [1.06e4, 1.08e4] }
+    },
+    {
+      "name": "warmer_at_350K",
+      "description": "Same ΔH, ΔS. Higher T accelerates the rate ~24×. k ≈ 2.517e5 s^-1.",
+      "inputs": { "T": 350.0, "deltaH": 50000.0, "deltaS": 0.0 },
+      "expected": { "k_per_s_within_eps": [2.50e5, 2.54e5] }
+    },
+    {
+      "name": "favourable_entropy_boost",
+      "description": "T=298 K, ΔH=50 kJ/mol, ΔS=+50 J/(mol·K) (favourable TS entropy). exp(50/R) ≈ 408 → k ≈ 4.37e6 s^-1.",
+      "inputs": { "T": 298.0, "deltaH": 50000.0, "deltaS": 50.0 },
+      "expected": { "k_per_s_within_eps": [4.35e6, 4.40e6] }
+    },
+    {
+      "name": "unfavourable_entropy_high_barrier",
+      "description": "T=298 K, ΔH=80 kJ/mol, ΔS=-100 J/(mol·K). Suppressed: k ≈ 3.53e-7 s^-1.",
+      "inputs": { "T": 298.0, "deltaH": 80000.0, "deltaS": -100.0 },
+      "expected": { "k_per_s_within_eps": [3.50e-7, 3.56e-7] }
+    },
+    {
+      "name": "rejects_zero_temperature",
+      "inputs": { "T": 0.0, "deltaH": 50000.0, "deltaS": 0.0 },
+      "expected": { "raises": "ValueError" }
+    }
+  ],
+  "verification_targets": {
+    "dimensional": {
+      "lhs_label": "k  [1/s]",
+      "lhs_dims": { "T": -1 },
+      "rhs_label": "(k_B T / h) exp(ΔS/R) exp(-ΔH/(RT))  [(J/K · K)/(J·s) = 1/s]",
+      "rhs_dims": { "T": -1 }
+    },
+    "limits": [
+      "T → ∞: k → (k_B T / h) exp(ΔS/R) (Arrhenius pre-exponential limit).",
+      "ΔS = 0: k = (k_B T / h) exp(-ΔH/(RT)) (entropy-neutral TS).",
+      "Apparent Arrhenius activation energy: E_a = ΔH + RT (Tolman correction)."
+    ],
+    "validation_envelopes": {
+      "boltzmann_J_per_K": [1.380648e-23, 1.380650e-23],
+      "planck_J_s": [6.626070e-34, 6.626071e-34],
+      "gas_constant_J_per_mol_K": [8.31445, 8.31447]
+    }
+  }
+}

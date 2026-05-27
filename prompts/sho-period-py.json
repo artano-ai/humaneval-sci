@@ -1,0 +1,52 @@
+{
+  "id": "sho-period-py",
+  "card_ids": ["simple-harmonic-oscillator"],
+  "domain": "physics-classical-mechanics",
+  "language": "python",
+  "prompt": "Write a Python function `sho_period(m, k)` that returns the period (seconds) of a mass-spring simple harmonic oscillator: T = 2 pi sqrt(m / k). Inputs: mass m (kg, positive), spring constant k (N/m, positive). Raise ValueError if either is non-positive.",
+  "reference_solution": "import math\n\ndef sho_period(m: float, k: float) -> float:\n    if m <= 0:\n        raise ValueError(\"mass m must be positive\")\n    if k <= 0:\n        raise ValueError(\"spring constant k must be positive\")\n    return 2.0 * math.pi * math.sqrt(m / k)\n",
+  "test_cases": [
+    {
+      "name": "unit_mass_unit_omega_squared",
+      "description": "m=1 kg, k=(2 pi)^2 N/m -> T = 1 s exactly.",
+      "inputs": { "m": 1.0, "k": 39.47841760435743 },
+      "expected": { "T_within_eps": [0.9999, 1.0001] }
+    },
+    {
+      "name": "quadrupling_mass_doubles_period",
+      "description": "T scales as sqrt(m): 4x mass -> 2x period.",
+      "inputs_a": { "m": 1.0, "k": 100.0 },
+      "inputs_b": { "m": 4.0, "k": 100.0 },
+      "expected": { "T_b_over_T_a": [1.99, 2.01] }
+    },
+    {
+      "name": "stiffer_spring_shorter_period",
+      "description": "T scales as 1/sqrt(k): 4x stiffness -> 0.5x period.",
+      "inputs_a": { "m": 1.0, "k": 25.0 },
+      "inputs_b": { "m": 1.0, "k": 100.0 },
+      "expected": { "T_b_over_T_a": [0.499, 0.501] }
+    },
+    {
+      "name": "rejects_zero_mass",
+      "inputs": { "m": 0.0, "k": 1.0 },
+      "expected": { "raises": "ValueError" }
+    },
+    {
+      "name": "rejects_negative_spring_constant",
+      "inputs": { "m": 1.0, "k": -1.0 },
+      "expected": { "raises": "ValueError" }
+    }
+  ],
+  "verification_targets": {
+    "dimensional": {
+      "lhs_label": "T  [s]",
+      "lhs_dims": { "T": 1 },
+      "rhs_label": "2 pi sqrt(m/k)  [s]",
+      "rhs_dims": { "T": 1 }
+    },
+    "limits": [
+      "k -> infinity:  T -> 0  (infinitely stiff spring oscillates instantly)",
+      "m -> 0:  T -> 0  (massless system has zero inertia, no period)"
+    ]
+  }
+}

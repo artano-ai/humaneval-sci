@@ -1,0 +1,57 @@
+{
+  "id": "michaelis-menten-lineweaver-burk-py",
+  "card_ids": ["michaelis-menten-enzyme-kinetics"],
+  "domain": "biology-enzyme-kinetics",
+  "language": "python",
+  "prompt": "Given measurements of enzyme initial-rate v at several substrate concentrations [S], fit V_max and K_m via the Lineweaver-Burk linearization of the Michaelis-Menten equation: 1/v = (K_m / V_max) * (1/[S]) + 1/V_max. The plot of 1/v versus 1/[S] is a straight line with slope K_m/V_max and intercept 1/V_max. Write a Python function `lineweaver_burk_fit(S, v)` that takes two equal-length lists S (substrate concentrations, all > 0) and v (rates, all > 0), performs ordinary least-squares regression in the (1/[S], 1/v) plane, and returns [V_max, K_m] as a 2-element list. Raise ValueError if len(S) != len(v), len < 2, or any S_i <= 0 or v_i <= 0.",
+  "reference_solution": "def lineweaver_burk_fit(S, v) -> list:\n    if len(S) != len(v):\n        raise ValueError(\"S and v must have the same length\")\n    if len(S) < 2:\n        raise ValueError(\"need at least two data points\")\n    for s in S:\n        if s <= 0:\n            raise ValueError(\"all S must be positive\")\n    for vi in v:\n        if vi <= 0:\n            raise ValueError(\"all v must be positive\")\n    x = [1.0 / s for s in S]\n    y = [1.0 / vi for vi in v]\n    n = len(x)\n    mx = sum(x) / n\n    my = sum(y) / n\n    num = sum((xi - mx) * (yi - my) for xi, yi in zip(x, y))\n    den = sum((xi - mx) ** 2 for xi in x)\n    if den == 0:\n        raise ValueError(\"all S values are identical; cannot fit\")\n    slope = num / den\n    intercept = my - slope * mx\n    V_max = 1.0 / intercept\n    K_m   = slope * V_max\n    return [V_max, K_m]\n",
+  "test_cases": [
+    {
+      "name": "perfect_fit_4_points",
+      "description": "Synthetic data with V_max=10, K_m=2. S=[1,2,4,8] → v=[10/3, 5, 20/3, 8]. LB fit must recover V_max=10, K_m=2 exactly.",
+      "inputs": { "S": [1.0, 2.0, 4.0, 8.0], "v": [3.333333333333333, 5.0, 6.666666666666667, 8.0] },
+      "expected": { "params": [10.0, 2.0], "atol": 1.0e-6 }
+    },
+    {
+      "name": "perfect_fit_5_points",
+      "description": "Same parameters, 5 points. Recovery must remain exact.",
+      "inputs": { "S": [0.5, 1.0, 2.0, 4.0, 8.0], "v": [2.0, 3.333333333333333, 5.0, 6.666666666666667, 8.0] },
+      "expected": { "params": [10.0, 2.0], "atol": 1.0e-6 }
+    },
+    {
+      "name": "log_spaced_points",
+      "description": "Same parameters, log-spaced S = [1, 3, 9, 27]. Recovery exact within tolerance.",
+      "inputs": { "S": [1.0, 3.0, 9.0, 27.0], "v": [3.3333333333333335, 6.0, 8.181818181818182, 9.310344827586206] },
+      "expected": { "params": [10.0, 2.0], "atol": 1.0e-6 }
+    },
+    {
+      "name": "rejects_length_mismatch",
+      "inputs": { "S": [1.0, 2.0], "v": [1.0] },
+      "expected": { "raises": "ValueError" }
+    },
+    {
+      "name": "rejects_single_point",
+      "inputs": { "S": [1.0], "v": [1.0] },
+      "expected": { "raises": "ValueError" }
+    },
+    {
+      "name": "rejects_zero_substrate",
+      "inputs": { "S": [0.0, 1.0], "v": [1.0, 2.0] },
+      "expected": { "raises": "ValueError" }
+    }
+  ],
+  "verification_targets": {
+    "dimensional": {
+      "lhs_label": "[V_max, K_m]  [units of v, units of S]",
+      "lhs_dims": {},
+      "rhs_label": "OLS slope = K_m/V_max, intercept = 1/V_max from LB linearisation",
+      "rhs_dims": {}
+    },
+    "limits": [
+      "Noise-free data: LB fit recovers true (V_max, K_m) exactly (modulo float).",
+      "All S identical: no slope information; the harness raises by convention.",
+      "LB is statistically biased toward low-[S] points (small v_i amplifies y-error). The fit is still mathematically defined; bias only shows on noisy data."
+    ],
+    "validation_envelopes": {}
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "id": "central-second-derivative-py",
+  "card_ids": ["finite-difference-truncation-error"],
+  "domain": "numerical-methods-finite-difference",
+  "language": "python",
+  "prompt": "Write a Python function `central_second_derivative(f_minus, f_center, f_plus, h)` that returns the central-difference estimate of the second derivative at the middle point: f''(x) ≈ (f(x - h) - 2 f(x) + f(x + h)) / h^2. This 3-point stencil has truncation error O(h^2). Inputs: three function-value samples at evenly spaced points and the spacing h (must be positive). Raise ValueError if h <= 0.",
+  "reference_solution": "def central_second_derivative(f_minus: float, f_center: float, f_plus: float, h: float) -> float:\n    if h <= 0:\n        raise ValueError(\"step h must be positive\")\n    return (f_minus - 2.0 * f_center + f_plus) / (h * h)\n",
+  "test_cases": [
+    {
+      "name": "x_squared_exact",
+      "description": "For f(x) = x^2 at x=0 with h=1: f(-1)=1, f(0)=0, f(1)=1 -> f'' = (1 - 0 + 1)/1 = 2. Exact (parabola has constant second derivative).",
+      "inputs": { "f_minus": 1.0, "f_center": 0.0, "f_plus": 1.0, "h": 1.0 },
+      "expected": { "d2f": 2.0, "atol": 1e-12 }
+    },
+    {
+      "name": "linear_function_zero_curvature",
+      "description": "f(x) = 2x + 3 is linear -> f''=0 exactly, for any h.",
+      "inputs": { "f_minus": 1.0, "f_center": 3.0, "f_plus": 5.0, "h": 1.0 },
+      "expected": { "d2f": 0.0, "atol": 1e-12 }
+    },
+    {
+      "name": "constant_function_zero_curvature",
+      "inputs": { "f_minus": 7.0, "f_center": 7.0, "f_plus": 7.0, "h": 0.5 },
+      "expected": { "d2f": 0.0, "atol": 1e-12 }
+    },
+    {
+      "name": "inverse_square_in_h",
+      "description": "For the same triplet (1, 0, 1), halving h quadruples the estimate.",
+      "inputs_a": { "f_minus": 1.0, "f_center": 0.0, "f_plus": 1.0, "h": 1.0 },
+      "inputs_b": { "f_minus": 1.0, "f_center": 0.0, "f_plus": 1.0, "h": 0.5 },
+      "expected": { "d2f_b_over_d2f_a": [3.99, 4.01] }
+    },
+    {
+      "name": "rejects_zero_h",
+      "inputs": { "f_minus": 1.0, "f_center": 0.0, "f_plus": 1.0, "h": 0.0 },
+      "expected": { "raises": "ValueError" }
+    }
+  ],
+  "verification_targets": {
+    "dimensional": {
+      "lhs_label": "f''(x)  [units(f)/units(x)^2]",
+      "lhs_dims": {},
+      "rhs_label": "(f(x-h) - 2 f(x) + f(x+h)) / h^2  [units(f)/units(x)^2]",
+      "rhs_dims": {}
+    },
+    "limits": [
+      "h -> 0:  estimate -> exact f''(x)  (continuous limit)",
+      "exact for polynomials of degree <= 3:  truncation error vanishes",
+      "general f:  truncation error = (h^2/12) f^(4)(x) + O(h^4)"
+    ]
+  }
+}

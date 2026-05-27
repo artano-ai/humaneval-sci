@@ -1,0 +1,40 @@
+{
+  "id": "cfl-step-size-py",
+  "card_ids": ["cfl-stability-condition"],
+  "domain": "numerical-methods-pde",
+  "language": "python",
+  "prompt": "Write a Python function `cfl_max_dt(u_max, dx, C_max=1.0)` that returns the largest stable time step delta_t for an explicit scheme on the linear advection equation, given the maximum wave speed u_max (m/s), the grid spacing dx (m), and the method's Courant-number ceiling C_max (default 1.0 for first-order upwind). The returned dt must satisfy C = u_max * dt / dx <= C_max. Raise ValueError if u_max <= 0, dx <= 0, or C_max <= 0.",
+  "reference_solution": "def cfl_max_dt(u_max: float, dx: float, C_max: float = 1.0) -> float:\n    if u_max <= 0:\n        raise ValueError(\"u_max must be positive\")\n    if dx <= 0:\n        raise ValueError(\"dx must be positive\")\n    if C_max <= 0:\n        raise ValueError(\"C_max must be positive\")\n    return C_max * dx / u_max\n",
+  "test_cases": [
+    {
+      "name": "unit_grid_unit_speed",
+      "inputs": { "u_max": 1.0, "dx": 1.0, "C_max": 1.0 },
+      "expected": { "dt": 1.0, "atol": 1e-12 }
+    },
+    {
+      "name": "scaled_grid",
+      "description": "Halving dx halves the maximum stable dt.",
+      "inputs_a": { "u_max": 2.0, "dx": 0.1, "C_max": 0.8 },
+      "inputs_b": { "u_max": 2.0, "dx": 0.05, "C_max": 0.8 },
+      "expected": { "dt_b_over_dt_a": [0.499, 0.501] }
+    },
+    {
+      "name": "rejects_zero_speed",
+      "inputs": { "u_max": 0.0, "dx": 1.0, "C_max": 1.0 },
+      "expected": { "raises": "ValueError" }
+    }
+  ],
+  "verification_targets": {
+    "dimensional": {
+      "lhs_label": "C  [dimensionless]",
+      "lhs_dims": {},
+      "rhs_label": "u dt / dx  [m/s * s / m = dimensionless]",
+      "rhs_dims": {}
+    },
+    "limits": [
+      "C < C_max:  stable",
+      "C = C_max:  marginally stable",
+      "C > C_max:  unstable (discrete domain of dependence excludes continuous one)"
+    ]
+  }
+}

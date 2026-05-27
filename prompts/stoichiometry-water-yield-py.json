@@ -1,0 +1,51 @@
+{
+  "id": "stoichiometry-water-yield-py",
+  "card_ids": ["stoichiometry-mass-balance"],
+  "domain": "chemistry-stoichiometry",
+  "language": "python",
+  "prompt": "Write a Python function `water_yield(moles_H2, moles_O2)` that returns the moles of liquid water produced when hydrogen and oxygen react via the balanced equation 2 H2 + O2 -> 2 H2O. The limiting reagent caps the product yield: each mol of O2 produces 2 mol H2O, and each mol of H2 produces 1 mol H2O. Return min(2 * moles_O2, moles_H2). Raise ValueError if either input is negative.",
+  "reference_solution": "def water_yield(moles_H2: float, moles_O2: float) -> float:\n    if moles_H2 < 0:\n        raise ValueError(\"moles_H2 must be non-negative\")\n    if moles_O2 < 0:\n        raise ValueError(\"moles_O2 must be non-negative\")\n    return min(2.0 * moles_O2, moles_H2)\n",
+  "test_cases": [
+    {
+      "name": "stoichiometric_ratio",
+      "description": "Exact 2:1 ratio: 4 mol H2 + 2 mol O2 -> 4 mol H2O.",
+      "inputs": { "moles_H2": 4.0, "moles_O2": 2.0 },
+      "expected": { "moles_H2O": 4.0, "atol": 1e-12 }
+    },
+    {
+      "name": "hydrogen_excess_oxygen_limiting",
+      "description": "Excess H2; O2 limits: 4 mol H2 + 1 mol O2 -> 2 mol H2O.",
+      "inputs": { "moles_H2": 4.0, "moles_O2": 1.0 },
+      "expected": { "moles_H2O": 2.0, "atol": 1e-12 }
+    },
+    {
+      "name": "oxygen_excess_hydrogen_limiting",
+      "description": "Excess O2; H2 limits: 2 mol H2 + 2 mol O2 -> 2 mol H2O.",
+      "inputs": { "moles_H2": 2.0, "moles_O2": 2.0 },
+      "expected": { "moles_H2O": 2.0, "atol": 1e-12 }
+    },
+    {
+      "name": "no_reactants",
+      "inputs": { "moles_H2": 0.0, "moles_O2": 0.0 },
+      "expected": { "moles_H2O": 0.0, "atol": 1e-12 }
+    },
+    {
+      "name": "rejects_negative_input",
+      "inputs": { "moles_H2": -1.0, "moles_O2": 1.0 },
+      "expected": { "raises": "ValueError" }
+    }
+  ],
+  "verification_targets": {
+    "dimensional": {
+      "lhs_label": "n_H2O  [mol]",
+      "lhs_dims": { "N": 1 },
+      "rhs_label": "min(2 n_O2, n_H2)  [mol]",
+      "rhs_dims": { "N": 1 }
+    },
+    "limits": [
+      "n_H2 = 2 n_O2:  stoichiometric ratio, full conversion of both",
+      "n_H2 = 0 or n_O2 = 0:  no product (mass conservation)"
+    ],
+    "conservation_laws": ["particle-number"]
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "id": "hardy-weinberg-chi-square-py",
+  "card_ids": ["hardy-weinberg-equilibrium"],
+  "domain": "biology-population-genetics",
+  "language": "python",
+  "prompt": "Write a Python function `hwe_chi_square(n_AA, n_Aa, n_aa)` that returns the Pearson chi-square goodness-of-fit statistic for testing whether observed diallelic genotype counts deviate from Hardy-Weinberg equilibrium. Procedure: (1) compute the empirical allele frequency p = (2*n_AA + n_Aa) / (2*N) where N = n_AA + n_Aa + n_aa; (2) compute expected counts under HWE: E_AA = p^2 * N, E_Aa = 2*p*(1-p)*N, E_aa = (1-p)^2 * N; (3) return chi^2 = sum_i (O_i - E_i)^2 / E_i over the three genotypes (skipping any cell where E_i is zero). Raise ValueError if any input is negative or if N == 0.",
+  "reference_solution": "def hwe_chi_square(n_AA: float, n_Aa: float, n_aa: float) -> float:\n    if n_AA < 0 or n_Aa < 0 or n_aa < 0:\n        raise ValueError(\"genotype counts must be non-negative\")\n    N = n_AA + n_Aa + n_aa\n    if N <= 0:\n        raise ValueError(\"total population must be positive\")\n    p = (2.0 * n_AA + n_Aa) / (2.0 * N)\n    q = 1.0 - p\n    E_AA = p * p * N\n    E_Aa = 2.0 * p * q * N\n    E_aa = q * q * N\n    chi2 = 0.0\n    for O, E in ((n_AA, E_AA), (n_Aa, E_Aa), (n_aa, E_aa)):\n        if E > 0:\n            chi2 += (O - E) ** 2 / E\n    return chi2\n",
+  "test_cases": [
+    {
+      "name": "perfect_hwe_zero_chi_square",
+      "description": "If counts are exactly 25/50/25 with p=0.5, then expected = (25, 50, 25) -> chi^2 = 0.",
+      "inputs": { "n_AA": 25.0, "n_Aa": 50.0, "n_aa": 25.0 },
+      "expected": { "chi_square_within_eps": [-1e-9, 1e-9] }
+    },
+    {
+      "name": "fixed_allele_zero_chi_square",
+      "description": "p=1 (all AA): expected = (N, 0, 0). All cells with E=0 are skipped; chi^2 = 0.",
+      "inputs": { "n_AA": 100.0, "n_Aa": 0.0, "n_aa": 0.0 },
+      "expected": { "chi_square": 0.0, "atol": 1e-12 }
+    },
+    {
+      "name": "heterozygote_excess",
+      "description": "60 AA, 80 Aa, 60 aa  -> p = (120+80)/(400) = 0.5, expected = (50, 100, 50). chi^2 = (10^2/50)+(20^2/100)+(10^2/50) = 2+4+2 = 8.",
+      "inputs": { "n_AA": 60.0, "n_Aa": 80.0, "n_aa": 60.0 },
+      "expected": { "chi_square_within_eps": [7.99, 8.01] }
+    },
+    {
+      "name": "heterozygote_deficit_known_excess_chi_square",
+      "description": "40 AA, 20 Aa, 40 aa -> p = (80+20)/(200) = 0.5, expected = (25, 50, 25). chi^2 = (15^2/25)+(30^2/50)+(15^2/25) = 9+18+9 = 36.",
+      "inputs": { "n_AA": 40.0, "n_Aa": 20.0, "n_aa": 40.0 },
+      "expected": { "chi_square_within_eps": [35.99, 36.01] }
+    },
+    {
+      "name": "rejects_zero_population",
+      "inputs": { "n_AA": 0.0, "n_Aa": 0.0, "n_aa": 0.0 },
+      "expected": { "raises": "ValueError" }
+    },
+    {
+      "name": "rejects_negative_count",
+      "inputs": { "n_AA": -1.0, "n_Aa": 50.0, "n_aa": 50.0 },
+      "expected": { "raises": "ValueError" }
+    }
+  ],
+  "verification_targets": {
+    "dimensional": {
+      "lhs_label": "chi^2  [dimensionless]",
+      "lhs_dims": {},
+      "rhs_label": "sum (O - E)^2 / E  [dimensionless]",
+      "rhs_dims": {}
+    },
+    "limits": [
+      "Observed = Expected:  chi^2 = 0  (perfect HWE)",
+      "p = 0 or p = 1:  expected zeros in two cells, chi^2 = 0 by convention (fixed allele)",
+      "Heterozygote excess (Wahlund-like):  chi^2 grows quadratically with the excess",
+      "At alpha=0.05 with df=1 (3 cells - 1 for p estimated - 1 for total fixed):  chi^2_crit ≈ 3.84"
+    ]
+  }
+}

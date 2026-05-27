@@ -1,0 +1,66 @@
+{
+  "id": "cfl-1d-advection-max-dt-py",
+  "card_ids": ["cfl-stability-condition"],
+  "domain": "numerical-methods-pde",
+  "language": "python",
+  "prompt": "For an explicit upwind discretisation of the 1D linear advection equation u_t + v u_x = 0, the Courant-Friedrichs-Lewy (CFL) stability condition is C = |v| dt / dx <= C_max. With C_max = 1 for first-order upwind, the maximum stable time step is dt_max = C_max * dx / |v|. Write a Python function `cfl_max_dt(v, dx, C_max=1.0)` that returns dt_max. Inputs: v in m/s (any nonzero sign — only |v| enters); dx > 0 in m; C_max > 0 (dimensionless; 1.0 for upwind, typically 0.5 for some Lax-Wendroff variants). Raise ValueError if v == 0, dx <= 0, or C_max <= 0.",
+  "reference_solution": "def cfl_max_dt(v: float, dx: float, C_max: float = 1.0) -> float:\n    if v == 0:\n        raise ValueError(\"v must be nonzero (zero velocity gives no advection)\")\n    if dx <= 0:\n        raise ValueError(\"dx must be positive\")\n    if C_max <= 0:\n        raise ValueError(\"C_max must be positive\")\n    return C_max * dx / abs(v)\n",
+  "test_cases": [
+    {
+      "name": "unit_velocity_default_C",
+      "description": "v = 1 m/s, dx = 0.1 m → dt_max = 0.1 s.",
+      "inputs": { "v": 1.0, "dx": 0.1 },
+      "expected": { "dt_max_s": 0.1, "atol": 1.0e-12 }
+    },
+    {
+      "name": "double_velocity_halves_dt",
+      "description": "v = 2 m/s → dt_max = 0.05 s. Faster advection requires smaller step.",
+      "inputs": { "v": 2.0, "dx": 0.1 },
+      "expected": { "dt_max_s": 0.05, "atol": 1.0e-12 }
+    },
+    {
+      "name": "negative_velocity_same_magnitude",
+      "description": "v = -1 (leftward) → same dt_max as v = +1 (CFL depends on |v|).",
+      "inputs": { "v": -1.0, "dx": 0.1 },
+      "expected": { "dt_max_s": 0.1, "atol": 1.0e-12 }
+    },
+    {
+      "name": "finer_grid_smaller_step",
+      "description": "Halving dx halves dt_max (CFL constraint scales with grid).",
+      "inputs": { "v": 1.0, "dx": 0.05 },
+      "expected": { "dt_max_s": 0.05, "atol": 1.0e-12 }
+    },
+    {
+      "name": "tighter_C_max",
+      "description": "C_max = 0.5 (some schemes) → dt halved.",
+      "inputs": { "v": 1.0, "dx": 0.1, "C_max": 0.5 },
+      "expected": { "dt_max_s": 0.05, "atol": 1.0e-12 }
+    },
+    {
+      "name": "rejects_zero_velocity",
+      "inputs": { "v": 0.0, "dx": 0.1 },
+      "expected": { "raises": "ValueError" }
+    },
+    {
+      "name": "rejects_zero_dx",
+      "inputs": { "v": 1.0, "dx": 0.0 },
+      "expected": { "raises": "ValueError" }
+    }
+  ],
+  "verification_targets": {
+    "dimensional": {
+      "lhs_label": "dt_max  [s]",
+      "lhs_dims": { "T": 1 },
+      "rhs_label": "C_max · dx / |v|  [m / (m/s) = s]",
+      "rhs_dims": { "T": 1 }
+    },
+    "limits": [
+      "v → ∞ at fixed dx: dt_max → 0 (very fast advection forbids any explicit step).",
+      "dx → 0 at fixed v: dt_max → 0 (very fine grid forbids any explicit step).",
+      "Independent of v sign (only |v| enters via CFL)."
+    ],
+    "validation_envelopes": {
+      "C_max_upwind_default": [0.999, 1.001]
+    }
+  }
+}

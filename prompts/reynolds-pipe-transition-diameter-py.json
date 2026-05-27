@@ -1,0 +1,60 @@
+{
+  "id": "reynolds-pipe-transition-diameter-py",
+  "card_ids": ["reynolds-number-similarity"],
+  "domain": "engineering-fluid-dynamics",
+  "language": "python",
+  "prompt": "The Reynolds number for pipe flow is Re = rho v D / mu, with the laminar-to-turbulent transition occurring around Re_crit = 2300. Given fluid density rho, flow speed v, and dynamic viscosity mu, find the pipe diameter D at which the flow exactly transitions. Write a Python function `pipe_transition_diameter(rho, v, mu, Re_crit=2300.0)` that returns D in metres. Inputs: rho > 0 (kg/m^3); v > 0 (m/s); mu > 0 (Pa·s); Re_crit > 0 (dimensionless, default 2300). Raise ValueError on non-positive inputs.",
+  "reference_solution": "def pipe_transition_diameter(rho: float, v: float, mu: float, Re_crit: float = 2300.0) -> float:\n    if rho <= 0:\n        raise ValueError(\"rho must be positive\")\n    if v <= 0:\n        raise ValueError(\"v must be positive\")\n    if mu <= 0:\n        raise ValueError(\"mu must be positive\")\n    if Re_crit <= 0:\n        raise ValueError(\"Re_crit must be positive\")\n    return Re_crit * mu / (rho * v)\n",
+  "test_cases": [
+    {
+      "name": "water_one_meter_per_second",
+      "description": "Water (rho=1000 kg/m^3, mu=1e-3 Pa·s) at v=1 m/s → D = 2300·1e-3/(1000·1) = 2.3 mm.",
+      "inputs": { "rho": 1000.0, "v": 1.0, "mu": 1.0e-3 },
+      "expected": { "D_m_within_eps": [0.00229, 0.00231] }
+    },
+    {
+      "name": "water_slow_flow",
+      "description": "Same fluid, v=0.1 m/s → D = 23 mm. Slow flows need wider pipes to remain laminar.",
+      "inputs": { "rho": 1000.0, "v": 0.1, "mu": 1.0e-3 },
+      "expected": { "D_m_within_eps": [0.0229, 0.0231] }
+    },
+    {
+      "name": "air_at_one_meter_per_second",
+      "description": "Air at 15 C: rho=1.225 kg/m^3, mu=1.81e-5 Pa·s, v=1 m/s → D ≈ 34 mm.",
+      "inputs": { "rho": 1.225, "v": 1.0, "mu": 1.81e-5 },
+      "expected": { "D_m_within_eps": [0.0339, 0.0341] }
+    },
+    {
+      "name": "custom_re_crit_4000",
+      "description": "Some references use Re_crit = 4000 as upper bound of transition region. Water at v=1 m/s → D = 4 mm.",
+      "inputs": { "rho": 1000.0, "v": 1.0, "mu": 1.0e-3, "Re_crit": 4000.0 },
+      "expected": { "D_m_within_eps": [0.00399, 0.00401] }
+    },
+    {
+      "name": "rejects_zero_velocity",
+      "inputs": { "rho": 1000.0, "v": 0.0, "mu": 1.0e-3 },
+      "expected": { "raises": "ValueError" }
+    },
+    {
+      "name": "rejects_negative_viscosity",
+      "inputs": { "rho": 1000.0, "v": 1.0, "mu": -1.0e-3 },
+      "expected": { "raises": "ValueError" }
+    }
+  ],
+  "verification_targets": {
+    "dimensional": {
+      "lhs_label": "D  [m]",
+      "lhs_dims": { "L": 1 },
+      "rhs_label": "Re_crit · mu / (rho · v)  [Pa·s / (kg/m^3 · m/s) = m]",
+      "rhs_dims": { "L": 1 }
+    },
+    "limits": [
+      "v → 0+: D → infinity (slow flow stays laminar regardless of pipe size).",
+      "rho → ∞ or mu → 0+: D → 0 (heavier or less-viscous fluid transitions at smaller D).",
+      "Doubling Re_crit doubles D_crit linearly (same fluid, same v)."
+    ],
+    "validation_envelopes": {
+      "re_crit_default": [2299.0, 2301.0]
+    }
+  }
+}

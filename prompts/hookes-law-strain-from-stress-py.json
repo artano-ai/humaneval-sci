@@ -1,0 +1,51 @@
+{
+  "id": "hookes-law-strain-from-stress-py",
+  "card_ids": ["hookes-law-stress-strain"],
+  "domain": "engineering-solid-mechanics",
+  "language": "python",
+  "prompt": "Write a Python function `strain_from_stress(sigma, E)` that returns the strain ε of a linearly elastic isotropic material given the applied stress σ (Pa) and Young's modulus E (Pa, positive): ε = σ / E. Raise ValueError if E <= 0.",
+  "reference_solution": "def strain_from_stress(sigma: float, E: float) -> float:\n    if E <= 0:\n        raise ValueError(\"Young's modulus E must be positive\")\n    return sigma / E\n",
+  "test_cases": [
+    {
+      "name": "steel_at_200_mpa",
+      "description": "E=200 GPa, σ=200 MPa -> ε = 1e-3.",
+      "inputs": { "sigma": 2.0e8, "E": 200e9 },
+      "expected": { "strain_within_eps": [9.99e-4, 1.001e-3] }
+    },
+    {
+      "name": "zero_stress_zero_strain",
+      "inputs": { "sigma": 0.0, "E": 200e9 },
+      "expected": { "strain": 0.0, "atol": 1e-15 }
+    },
+    {
+      "name": "compression_negative_strain",
+      "inputs": { "sigma": -1.4e8, "E": 70e9 },
+      "expected": { "strain_within_eps": [-2.001e-3, -1.999e-3] }
+    },
+    {
+      "name": "stiffer_material_smaller_strain",
+      "description": "Same stress, double E -> half the strain.",
+      "inputs_a": { "sigma": 1.0e8, "E": 100e9 },
+      "inputs_b": { "sigma": 1.0e8, "E": 200e9 },
+      "expected": { "strain_b_over_strain_a": [0.499, 0.501] }
+    },
+    {
+      "name": "rejects_zero_modulus",
+      "inputs": { "sigma": 1.0e8, "E": 0.0 },
+      "expected": { "raises": "ValueError" }
+    }
+  ],
+  "verification_targets": {
+    "dimensional": {
+      "lhs_label": "ε  [dimensionless]",
+      "lhs_dims": {},
+      "rhs_label": "σ / E  [dimensionless]",
+      "rhs_dims": {}
+    },
+    "limits": [
+      "σ = 0:  ε = 0",
+      "E -> infinity:  ε -> 0  (rigid material)",
+      "σ -> 0 with bounded E:  ε -> 0  (linear regime, no plastic offset)"
+    ]
+  }
+}

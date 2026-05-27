@@ -1,0 +1,60 @@
+{
+  "id": "rk4-vs-euler-convergence-order-py",
+  "card_ids": ["runge-kutta-4"],
+  "domain": "numerical-methods-ode",
+  "language": "python",
+  "prompt": "Empirically measure the convergence order of forward Euler vs classical 4-stage Runge-Kutta on the test problem y' = -y, y(0) = 1, integrated to t = 1 (exact solution y(1) = e^-1). For a method of global order p, halving the step h reduces the error by 2^p. Given N1 and N2 = k·N1 step counts (k = N2/N1), the measured order is p = log(error(N1) / error(N2)) / log(N2 / N1). Write a Python function `convergence_order(method, N1, N2)` returning the measured order p (a float, ideally ~1 for Euler and ~4 for RK4). Inputs: method in {'euler', 'rk4'}; N1 >= 2 (int); N2 > N1 (int). Raise ValueError on invalid method, N1 < 2, or N2 <= N1.",
+  "reference_solution": "import math\n\ndef convergence_order(method: str, N1: int, N2: int) -> float:\n    if method not in ('euler', 'rk4'):\n        raise ValueError(\"method must be 'euler' or 'rk4'\")\n    if N1 < 2:\n        raise ValueError(\"N1 must be >= 2\")\n    if N2 <= N1:\n        raise ValueError(\"N2 must be > N1\")\n    def solve(N):\n        h = 1.0 / N\n        y = 1.0\n        for _ in range(N):\n            if method == 'euler':\n                y = y + h * (-y)\n            else:\n                k1 = -y\n                k2 = -(y + 0.5 * h * k1)\n                k3 = -(y + 0.5 * h * k2)\n                k4 = -(y + h * k3)\n                y = y + (h / 6.0) * (k1 + 2.0 * k2 + 2.0 * k3 + k4)\n        return y\n    exact = math.exp(-1.0)\n    e1 = abs(solve(N1) - exact)\n    e2 = abs(solve(N2) - exact)\n    if e2 == 0:\n        raise ValueError(\"error(N2) is exactly zero; cannot estimate order\")\n    return math.log(e1 / e2) / math.log(N2 / N1)\n",
+  "test_cases": [
+    {
+      "name": "euler_order_one_at_N10_N20",
+      "description": "Forward Euler is O(h). Measured p between N1=10, N2=20 ≈ 1.03 (slightly above 1 due to truncated Taylor; asymptotically → 1).",
+      "inputs": { "method": "euler", "N1": 10, "N2": 20 },
+      "expected": { "p_within_eps": [0.99, 1.06] }
+    },
+    {
+      "name": "euler_order_one_at_N50_N100",
+      "description": "Larger N → measured p closer to the asymptotic 1.0. Expected ≈ 1.006.",
+      "inputs": { "method": "euler", "N1": 50, "N2": 100 },
+      "expected": { "p_within_eps": [0.99, 1.02] }
+    },
+    {
+      "name": "rk4_order_four_at_N10_N20",
+      "description": "Classical RK4 is O(h^4). p between N1=10, N2=20 ≈ 4.06.",
+      "inputs": { "method": "rk4", "N1": 10, "N2": 20 },
+      "expected": { "p_within_eps": [3.95, 4.15] }
+    },
+    {
+      "name": "rk4_order_four_at_N50_N100",
+      "description": "Asymptotic convergence: p ≈ 4.01.",
+      "inputs": { "method": "rk4", "N1": 50, "N2": 100 },
+      "expected": { "p_within_eps": [3.99, 4.05] }
+    },
+    {
+      "name": "rejects_invalid_method",
+      "inputs": { "method": "midpoint", "N1": 10, "N2": 20 },
+      "expected": { "raises": "ValueError" }
+    },
+    {
+      "name": "rejects_N2_le_N1",
+      "inputs": { "method": "euler", "N1": 20, "N2": 10 },
+      "expected": { "raises": "ValueError" }
+    }
+  ],
+  "verification_targets": {
+    "dimensional": {
+      "lhs_label": "p  [dimensionless]",
+      "lhs_dims": {},
+      "rhs_label": "log(e1/e2) / log(N2/N1)  [dimensionless]",
+      "rhs_dims": {}
+    },
+    "limits": [
+      "As N1, N2 → ∞ with N2/N1 fixed, measured p → algorithm-theoretical order: Euler → 1, RK4 → 4.",
+      "Below the asymptotic regime (small N), measured p drifts above the theoretical value due to leading-order error coefficients."
+    ],
+    "validation_envelopes": {
+      "euler_theoretical_order": [1.0, 1.0],
+      "rk4_theoretical_order": [4.0, 4.0]
+    }
+  }
+}

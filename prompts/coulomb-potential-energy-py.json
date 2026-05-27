@@ -1,0 +1,46 @@
+{
+  "id": "coulomb-potential-energy-py",
+  "card_ids": ["coulombs-law-point-charges"],
+  "domain": "physics-electromagnetism",
+  "language": "python",
+  "prompt": "Write a Python function `coulomb_potential_energy(q1, q2, r)` that returns the electrostatic potential energy (Joules) of two point charges separated by distance r (meters, positive): U = k q1 q2 / r, with k = 8.9875517923e9. Inputs: q1, q2 (Coulombs, may be negative), r > 0. Raise ValueError if r <= 0.",
+  "reference_solution": "def coulomb_potential_energy(q1: float, q2: float, r: float) -> float:\n    k = 8.9875517923e9\n    if r <= 0:\n        raise ValueError(\"separation r must be positive\")\n    return k * q1 * q2 / r\n",
+  "test_cases": [
+    {
+      "name": "unit_charges_unit_distance",
+      "inputs": { "q1": 1.0, "q2": 1.0, "r": 1.0 },
+      "expected": { "U_within_eps": [8.987e9, 8.988e9] }
+    },
+    {
+      "name": "opposite_charges_negative_energy",
+      "description": "Bound system has negative potential energy.",
+      "inputs": { "q1": 1.0e-6, "q2": -1.0e-6, "r": 1.0 },
+      "expected": { "U_within_eps": [-8.988e-3, -8.987e-3] }
+    },
+    {
+      "name": "inverse_in_distance",
+      "description": "Doubling r halves |U| (1/r scaling, unlike force's 1/r^2).",
+      "inputs_a": { "q1": 1e-6, "q2": 1e-6, "r": 1.0 },
+      "inputs_b": { "q1": 1e-6, "q2": 1e-6, "r": 2.0 },
+      "expected": { "U_b_over_U_a": [0.499, 0.501] }
+    },
+    {
+      "name": "rejects_zero_distance",
+      "inputs": { "q1": 1.0, "q2": 1.0, "r": 0.0 },
+      "expected": { "raises": "ValueError" }
+    }
+  ],
+  "verification_targets": {
+    "dimensional": {
+      "lhs_label": "U  [J]",
+      "lhs_dims": { "L": 2, "M": 1, "T": -2 },
+      "rhs_label": "k q1 q2 / r  [J]",
+      "rhs_dims": { "L": 2, "M": 1, "T": -2 }
+    },
+    "limits": [
+      "r -> infinity:  U -> 0  (potential vanishes at infinity, convention)",
+      "q2 -> -q1:  U -> -U  (sign flip with charge sign flip)"
+    ],
+    "conservation_laws": ["energy"]
+  }
+}

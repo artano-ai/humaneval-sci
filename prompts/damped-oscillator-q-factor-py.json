@@ -1,0 +1,57 @@
+{
+  "id": "damped-oscillator-q-factor-py",
+  "card_ids": ["simple-harmonic-oscillator"],
+  "domain": "physics-classical-mechanics",
+  "language": "python",
+  "prompt": "Write a Python function `quality_factor(omega_0, gamma)` that returns the dimensionless quality factor Q = omega_0 / gamma of a damped harmonic oscillator (equation of motion: x'' + gamma x' + omega_0^2 x = 0). Inputs: omega_0 (natural angular frequency, rad/s, must be > 0); gamma (damping coefficient, 1/s, must be > 0). Raise ValueError if omega_0 <= 0, gamma <= 0, or if the oscillator is critically damped or overdamped (gamma >= 2 omega_0). Q has no units; physically it is approximately the number of radians of free oscillation before the amplitude decays by 1/e.",
+  "reference_solution": "def quality_factor(omega_0: float, gamma: float) -> float:\n    if omega_0 <= 0:\n        raise ValueError(\"omega_0 must be positive\")\n    if gamma <= 0:\n        raise ValueError(\"gamma must be positive\")\n    if gamma >= 2.0 * omega_0:\n        raise ValueError(\"critically damped or overdamped: gamma >= 2 omega_0\")\n    return omega_0 / gamma\n",
+  "test_cases": [
+    {
+      "name": "high_Q_oscillator",
+      "description": "omega_0 = 1000, gamma = 10 (lightly damped) → Q = 100.",
+      "inputs": { "omega_0": 1000.0, "gamma": 10.0 },
+      "expected": { "Q_dimensionless": 100.0, "atol": 1.0e-9 }
+    },
+    {
+      "name": "modest_Q",
+      "description": "omega_0 = 10, gamma = 1 → Q = 10.",
+      "inputs": { "omega_0": 10.0, "gamma": 1.0 },
+      "expected": { "Q_dimensionless": 10.0, "atol": 1.0e-9 }
+    },
+    {
+      "name": "low_Q_underdamped_boundary",
+      "description": "omega_0 = 10, gamma = 19.9 (just below critical) → Q ≈ 0.5025.",
+      "inputs": { "omega_0": 10.0, "gamma": 19.9 },
+      "expected": { "Q_dimensionless": 0.502513, "atol": 1.0e-5 }
+    },
+    {
+      "name": "rejects_critically_damped",
+      "description": "gamma = 2 omega_0 is critical damping; not an oscillator.",
+      "inputs": { "omega_0": 10.0, "gamma": 20.0 },
+      "expected": { "raises": "ValueError" }
+    },
+    {
+      "name": "rejects_overdamped",
+      "inputs": { "omega_0": 10.0, "gamma": 25.0 },
+      "expected": { "raises": "ValueError" }
+    },
+    {
+      "name": "rejects_negative_omega",
+      "inputs": { "omega_0": -10.0, "gamma": 1.0 },
+      "expected": { "raises": "ValueError" }
+    }
+  ],
+  "verification_targets": {
+    "dimensional": {
+      "lhs_label": "Q  [dimensionless]",
+      "lhs_dims": {},
+      "rhs_label": "omega_0 / gamma  [(rad/s) / (1/s) = dimensionless]",
+      "rhs_dims": {}
+    },
+    "limits": [
+      "gamma -> 0+: Q -> infinity (undamped limit).",
+      "gamma -> 2 omega_0-: Q -> 0.5 (critical damping boundary)."
+    ],
+    "validation_envelopes": {}
+  }
+}

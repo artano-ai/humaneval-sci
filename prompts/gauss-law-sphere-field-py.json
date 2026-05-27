@@ -1,0 +1,48 @@
+{
+  "id": "gauss-law-sphere-field-py",
+  "card_ids": ["gauss-law-electricity"],
+  "domain": "physics-electromagnetism",
+  "language": "python",
+  "prompt": "Write a Python function `electric_field_uniform_sphere(Q, R, r)` that returns the electrostatic field magnitude (V/m) at radial distance r from the center of a uniformly volume-charged sphere of total charge Q (Coulombs) and radius R (meters), derived from Gauss's law. Three regimes:  r = 0 → E = 0;  0 < r < R → E = k Q r / R^3 (linear inside);  r >= R → E = k Q / r^2 (Coulomb-like outside). Use k = 8.9875517923e9. Inputs: Q (may be negative), R > 0, r >= 0. Raise ValueError if R <= 0 or r < 0.",
+  "reference_solution": "def electric_field_uniform_sphere(Q: float, R: float, r: float) -> float:\n    k = 8.9875517923e9\n    if R <= 0:\n        raise ValueError(\"sphere radius R must be positive\")\n    if r < 0:\n        raise ValueError(\"radial distance r must be non-negative\")\n    if r == 0:\n        return 0.0\n    if r < R:\n        return k * Q * r / (R ** 3)\n    return k * Q / (r * r)\n",
+  "test_cases": [
+    {
+      "name": "field_at_center_vanishes",
+      "inputs": { "Q": 1.0e-6, "R": 0.1, "r": 0.0 },
+      "expected": { "E": 0.0, "atol": 1e-9 }
+    },
+    {
+      "name": "outside_matches_point_charge",
+      "description": "At r = 2 R, field should match a point-charge at the sphere's center: E = k Q / r^2.",
+      "inputs": { "Q": 1.0e-6, "R": 0.1, "r": 0.2 },
+      "expected": { "E_within_eps": [2.246e5, 2.250e5] }
+    },
+    {
+      "name": "linear_inside",
+      "description": "At r = R/2 inside: E = k Q (R/2) / R^3 = k Q / (2 R^2).",
+      "inputs": { "Q": 1.0e-6, "R": 0.1, "r": 0.05 },
+      "expected": { "E_within_eps": [4.493e5, 4.494e5] }
+    },
+    {
+      "name": "rejects_negative_radius",
+      "inputs": { "Q": 1.0e-6, "R": -0.1, "r": 0.05 },
+      "expected": { "raises": "ValueError" }
+    }
+  ],
+  "verification_targets": {
+    "dimensional": {
+      "lhs_label": "E  [V/m]",
+      "lhs_dims": { "L": 1, "M": 1, "T": -3, "I": -1 },
+      "rhs_label": "k Q / r^2 (or k Q r / R^3)  [V/m]",
+      "rhs_dims": { "L": 1, "M": 1, "T": -3, "I": -1 }
+    },
+    "limits": [
+      "r = 0:  E = 0  (no field at center by symmetry)",
+      "r = R:  E(r=R^-) = E(r=R^+) = k Q / R^2  (continuous at the surface)",
+      "r -> infinity:  E -> 0  (far-field decay as 1/r^2)"
+    ],
+    "validation_envelopes": {
+      "coulombConstant_N_m2_per_C2": [8.9875517e9, 8.9875518e9]
+    }
+  }
+}

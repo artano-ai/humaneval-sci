@@ -1,0 +1,56 @@
+{
+  "id": "hookes-law-stress-py",
+  "card_ids": ["hookes-law-stress-strain"],
+  "domain": "engineering-solid-mechanics",
+  "language": "python",
+  "prompt": "Write a Python function `stress(strain, E)` that returns the stress σ (Pa) in a linearly elastic isotropic material under uniaxial loading using Hooke's law: σ = E · ε. Inputs: strain ε (dimensionless; positive = elongation, negative = compression), Young's modulus E (Pa, must be positive). Raise ValueError if E <= 0.",
+  "reference_solution": "def stress(strain: float, E: float) -> float:\n    if E <= 0:\n        raise ValueError(\"Young's modulus E must be positive\")\n    return E * strain\n",
+  "test_cases": [
+    {
+      "name": "small_strain_steel",
+      "description": "Steel (E=200 GPa) at 0.001 strain -> 2e8 Pa = 200 MPa.",
+      "inputs": { "strain": 0.001, "E": 200e9 },
+      "expected": { "sigma": 2.0e8, "atol": 1.0 }
+    },
+    {
+      "name": "zero_strain_zero_stress",
+      "inputs": { "strain": 0.0, "E": 200e9 },
+      "expected": { "sigma": 0.0, "atol": 1e-9 }
+    },
+    {
+      "name": "compression_negates_sign",
+      "description": "Negative (compressive) strain yields negative stress.",
+      "inputs": { "strain": -0.002, "E": 70e9 },
+      "expected": { "sigma": -1.4e8, "atol": 1.0 }
+    },
+    {
+      "name": "scales_linearly_in_strain",
+      "description": "Tripling strain triples stress (linear elastic regime).",
+      "inputs_a": { "strain": 0.0005, "E": 200e9 },
+      "inputs_b": { "strain": 0.0015, "E": 200e9 },
+      "expected": { "sigma_b_over_sigma_a": [2.99, 3.01] }
+    },
+    {
+      "name": "rejects_zero_modulus",
+      "inputs": { "strain": 0.001, "E": 0.0 },
+      "expected": { "raises": "ValueError" }
+    }
+  ],
+  "verification_targets": {
+    "dimensional": {
+      "lhs_label": "σ  [Pa]",
+      "lhs_dims": { "L": -1, "M": 1, "T": -2 },
+      "rhs_label": "E ε  [Pa]",
+      "rhs_dims": { "L": -1, "M": 1, "T": -2 }
+    },
+    "limits": [
+      "ε = 0:  σ = 0  (unstressed reference state)",
+      "ε << yield strain:  linear regime, σ = E ε holds exactly",
+      "ε > yield strain:  Hooke's law breaks down; plastic regime, not modelled here"
+    ],
+    "validation_envelopes": {
+      "youngsModulus_steel_GPa": [180.0, 220.0],
+      "youngsModulus_aluminum_GPa": [60.0, 75.0]
+    }
+  }
+}

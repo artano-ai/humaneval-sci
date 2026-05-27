@@ -1,0 +1,51 @@
+{
+  "id": "faraday-emf-py",
+  "card_ids": ["faraday-law-induction"],
+  "domain": "physics-electromagnetism",
+  "language": "python",
+  "prompt": "Write a Python function `induced_emf(dB_dt, area)` that returns the EMF (Volts) induced in a single-turn flat loop placed in a uniform magnetic field whose flux density is changing at rate dB/dt (T/s). Loop area is `area` (m^2, positive). By Faraday's law (Lenz convention), EMF = - area * dB/dt. Raise ValueError if area <= 0.",
+  "reference_solution": "def induced_emf(dB_dt: float, area: float) -> float:\n    if area <= 0:\n        raise ValueError(\"loop area must be positive\")\n    return -area * dB_dt\n",
+  "test_cases": [
+    {
+      "name": "increasing_flux_induces_negative_emf",
+      "description": "dB/dt = +1 T/s in a 0.1 m^2 loop -> EMF = -0.1 V.",
+      "inputs": { "dB_dt": 1.0, "area": 0.1 },
+      "expected": { "EMF": -0.1, "atol": 1e-12 }
+    },
+    {
+      "name": "decreasing_flux_induces_positive_emf",
+      "inputs": { "dB_dt": -2.5, "area": 0.04 },
+      "expected": { "EMF": 0.1, "atol": 1e-12 }
+    },
+    {
+      "name": "static_field_gives_zero",
+      "description": "dB/dt = 0 -> no induction.",
+      "inputs": { "dB_dt": 0.0, "area": 0.1 },
+      "expected": { "EMF": 0.0, "atol": 1e-12 }
+    },
+    {
+      "name": "linear_in_area",
+      "description": "Doubling the area doubles |EMF|.",
+      "inputs_a": { "dB_dt": 1.0, "area": 0.1 },
+      "inputs_b": { "dB_dt": 1.0, "area": 0.2 },
+      "expected": { "EMF_b_over_EMF_a": [1.99, 2.01] }
+    },
+    {
+      "name": "rejects_zero_area",
+      "inputs": { "dB_dt": 1.0, "area": 0.0 },
+      "expected": { "raises": "ValueError" }
+    }
+  ],
+  "verification_targets": {
+    "dimensional": {
+      "lhs_label": "EMF  [V]",
+      "lhs_dims": { "L": 2, "M": 1, "T": -3, "I": -1 },
+      "rhs_label": "-A dB/dt  [V]",
+      "rhs_dims": { "L": 2, "M": 1, "T": -3, "I": -1 }
+    },
+    "limits": [
+      "dB/dt = 0:  EMF = 0  (static field, no induction)",
+      "dB/dt -> -dB/dt:  EMF -> -EMF  (Lenz sign reversal)"
+    ]
+  }
+}

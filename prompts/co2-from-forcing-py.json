@@ -1,0 +1,52 @@
+{
+  "id": "co2-from-forcing-py",
+  "card_ids": ["co2-greenhouse-forcing"],
+  "domain": "climate-radiative-forcing",
+  "language": "python",
+  "prompt": "Write a Python function `co2_from_forcing(F, C0=278.0)` that inverts the simplified Myhre (1998) logarithmic CO2 forcing expression to return the atmospheric CO2 concentration C (ppm) that produces a radiative forcing of F (W/m^2) above the pre-industrial reference C0: C = C0 * exp(F / 5.35). Raise ValueError if C0 <= 0.",
+  "reference_solution": "import math\n\ndef co2_from_forcing(F: float, C0: float = 278.0) -> float:\n    if C0 <= 0:\n        raise ValueError(\"reference concentration C0 must be positive\")\n    return C0 * math.exp(F / 5.35)\n",
+  "test_cases": [
+    {
+      "name": "zero_forcing_baseline",
+      "description": "F = 0 -> C = C0.",
+      "inputs": { "F": 0.0, "C0": 278.0 },
+      "expected": { "C": 278.0, "atol": 1e-9 }
+    },
+    {
+      "name": "doubling_forcing",
+      "description": "F = 5.35 ln(2) ≈ 3.71 W/m^2 -> C = 2 C0 = 556 ppm.",
+      "inputs": { "F": 3.708, "C0": 278.0 },
+      "expected": { "C_within_eps": [555.5, 556.5] }
+    },
+    {
+      "name": "modern_forcing",
+      "description": "F ≈ 2.21 W/m^2 -> C ≈ 420 ppm.",
+      "inputs": { "F": 2.211, "C0": 278.0 },
+      "expected": { "C_within_eps": [419.5, 420.5] }
+    },
+    {
+      "name": "negative_forcing_halves_co2",
+      "description": "F = -5.35 ln(2) -> C = C0/2 = 139 ppm.",
+      "inputs": { "F": -3.708, "C0": 278.0 },
+      "expected": { "C_within_eps": [138.8, 139.2] }
+    },
+    {
+      "name": "rejects_zero_reference",
+      "inputs": { "F": 1.0, "C0": 0.0 },
+      "expected": { "raises": "ValueError" }
+    }
+  ],
+  "verification_targets": {
+    "dimensional": {
+      "lhs_label": "C  [ppm]",
+      "lhs_dims": {},
+      "rhs_label": "C0 exp(F / 5.35)  [ppm]",
+      "rhs_dims": {}
+    },
+    "limits": [
+      "F = 0:  C = C0  (pre-industrial baseline)",
+      "F = 5.35 ln 2:  C = 2 C0  (CO2 doubling, IPCC AR5)",
+      "Round-trip:  co2_radiative_forcing(co2_from_forcing(F, C0), C0) == F"
+    ]
+  }
+}

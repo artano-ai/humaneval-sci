@@ -1,0 +1,57 @@
+{
+  "id": "lotka-volterra-small-amplitude-period-py",
+  "card_ids": ["lotka-volterra-predator-prey"],
+  "domain": "biology-population-dynamics",
+  "language": "python",
+  "prompt": "The classical Lotka-Volterra predator-prey system dx/dt = alpha x - beta x y, dy/dt = delta x y - gamma y has a centre fixed point at (x*, y*) = (gamma/delta, alpha/beta). Linearising about the fixed point gives a harmonic oscillator with angular frequency omega = sqrt(alpha * gamma). Write a Python function `lv_small_amplitude_period(alpha, gamma_)` that returns the small-amplitude period T = 2 pi / sqrt(alpha * gamma) (seconds, if alpha, gamma are in 1/s). Note that beta and delta do NOT enter the period at small amplitude — only the linear growth and decay rates of prey and predator respectively. Inputs: alpha (prey intrinsic growth rate, > 0); gamma_ (predator intrinsic mortality rate, > 0). Raise ValueError if alpha <= 0 or gamma_ <= 0.",
+  "reference_solution": "import math\n\ndef lv_small_amplitude_period(alpha: float, gamma_: float) -> float:\n    if alpha <= 0:\n        raise ValueError(\"alpha must be positive\")\n    if gamma_ <= 0:\n        raise ValueError(\"gamma must be positive\")\n    return 2.0 * math.pi / math.sqrt(alpha * gamma_)\n",
+  "test_cases": [
+    {
+      "name": "unit_rates",
+      "description": "alpha = gamma = 1: T = 2 pi ≈ 6.2832.",
+      "inputs": { "alpha": 1.0, "gamma_": 1.0 },
+      "expected": { "T_within_eps": [6.28315, 6.28322] }
+    },
+    {
+      "name": "faster_prey_growth",
+      "description": "alpha = 4, gamma = 1: T = 2 pi / 2 = pi ≈ 3.1416. Faster dynamics → shorter cycles.",
+      "inputs": { "alpha": 4.0, "gamma_": 1.0 },
+      "expected": { "T_within_eps": [3.14158, 3.14160] }
+    },
+    {
+      "name": "faster_predator_mortality",
+      "description": "alpha = 1, gamma = 9: T = 2 pi / 3 ≈ 2.0944.",
+      "inputs": { "alpha": 1.0, "gamma_": 9.0 },
+      "expected": { "T_within_eps": [2.09438, 2.09441] }
+    },
+    {
+      "name": "symmetric_doubling",
+      "description": "alpha = gamma = 2: T = 2 pi / 2 = pi. Both rates doubled → period halved.",
+      "inputs": { "alpha": 2.0, "gamma_": 2.0 },
+      "expected": { "T_within_eps": [3.14158, 3.14160] }
+    },
+    {
+      "name": "rejects_zero_alpha",
+      "inputs": { "alpha": 0.0, "gamma_": 1.0 },
+      "expected": { "raises": "ValueError" }
+    },
+    {
+      "name": "rejects_negative_gamma",
+      "inputs": { "alpha": 1.0, "gamma_": -1.0 },
+      "expected": { "raises": "ValueError" }
+    }
+  ],
+  "verification_targets": {
+    "dimensional": {
+      "lhs_label": "T  [s]",
+      "lhs_dims": { "T": 1 },
+      "rhs_label": "2 pi / sqrt(alpha * gamma)  [s · 1/sqrt(1/s² · 1) = s]",
+      "rhs_dims": { "T": 1 }
+    },
+    "limits": [
+      "alpha or gamma → 0+: T → infinity (one population's linear rate vanishes; no oscillation).",
+      "beta, delta do NOT enter the small-amplitude period (only the centre fixed-point location)."
+    ],
+    "validation_envelopes": {}
+  }
+}

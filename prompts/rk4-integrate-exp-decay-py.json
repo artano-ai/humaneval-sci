@@ -1,0 +1,52 @@
+{
+  "id": "rk4-integrate-exp-decay-py",
+  "card_ids": ["runge-kutta-4"],
+  "domain": "numerical-methods-ode",
+  "language": "python",
+  "prompt": "Write a Python function `integrate_exp_decay(y0, k, t_final, n_steps)` that integrates dy/dt = -k y from t=0 to t=t_final using `n_steps` equal RK4 steps and returns y(t_final). Inputs: initial y0 (real), decay rate k > 0, final time t_final > 0, number of steps n_steps (positive integer). Raise ValueError if k <= 0, t_final <= 0, or n_steps < 1.",
+  "reference_solution": "def integrate_exp_decay(y0: float, k: float, t_final: float, n_steps: int) -> float:\n    if k <= 0:\n        raise ValueError(\"decay rate k must be positive\")\n    if t_final <= 0:\n        raise ValueError(\"t_final must be positive\")\n    if n_steps < 1:\n        raise ValueError(\"n_steps must be >= 1\")\n    h = t_final / n_steps\n    y = float(y0)\n    for _ in range(int(n_steps)):\n        k1 = -k * y\n        k2 = -k * (y + h * k1 / 2.0)\n        k3 = -k * (y + h * k2 / 2.0)\n        k4 = -k * (y + h * k3)\n        y = y + (h / 6.0) * (k1 + 2.0 * k2 + 2.0 * k3 + k4)\n    return y\n",
+  "test_cases": [
+    {
+      "name": "y0_one_k_one_tf_one_n100",
+      "description": "y0=1, k=1, t_final=1, n=100 steps -> y(1) ≈ exp(-1) ≈ 0.3679.",
+      "inputs": { "y0": 1.0, "k": 1.0, "t_final": 1.0, "n_steps": 100 },
+      "expected": { "y_final_within_eps": [0.3678, 0.3680] }
+    },
+    {
+      "name": "convergence_more_steps_tighter",
+      "description": "Even 10 RK4 steps suffice for exp-decay over t=1 — RK4 has 4th-order accuracy.",
+      "inputs": { "y0": 1.0, "k": 1.0, "t_final": 1.0, "n_steps": 10 },
+      "expected": { "y_final_within_eps": [0.3678, 0.3680] }
+    },
+    {
+      "name": "zero_initial_is_fixed_point",
+      "inputs": { "y0": 0.0, "k": 3.0, "t_final": 5.0, "n_steps": 50 },
+      "expected": { "y_final": 0.0, "atol": 1e-12 }
+    },
+    {
+      "name": "faster_decay_rate",
+      "description": "k=2, t_final=1 -> y(1) ≈ exp(-2) ≈ 0.1353.",
+      "inputs": { "y0": 1.0, "k": 2.0, "t_final": 1.0, "n_steps": 100 },
+      "expected": { "y_final_within_eps": [0.1352, 0.1354] }
+    },
+    {
+      "name": "rejects_zero_steps",
+      "inputs": { "y0": 1.0, "k": 1.0, "t_final": 1.0, "n_steps": 0 },
+      "expected": { "raises": "ValueError" }
+    }
+  ],
+  "verification_targets": {
+    "dimensional": {
+      "lhs_label": "y(t_final)  [units(y)]",
+      "lhs_dims": {},
+      "rhs_label": "RK4 multi-step integral  [units(y)]",
+      "rhs_dims": {}
+    },
+    "limits": [
+      "t_final = 0:  y_final = y0  (no evolution)",
+      "y0 = 0:  y_final = 0  (fixed point preserved)",
+      "n_steps -> infinity:  y_final -> y0 exp(-k t_final)  (continuous limit)",
+      "RK4 global error: O((t_final/n_steps)^4)"
+    ]
+  }
+}

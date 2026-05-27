@@ -1,0 +1,61 @@
+{
+  "id": "nernst-half-cell-temperature-py",
+  "card_ids": ["nernst-equation"],
+  "domain": "chemistry-electrochemistry",
+  "language": "python",
+  "prompt": "Write a Python function `nernst_half_cell(E_std, n, Q, T)` that returns the half-cell electrode potential E (in Volts) from the Nernst equation: E = E_std - (R T / (n F)) * ln(Q). Constants: R = 8.31446 J/(mol·K), F = 96485.33212 C/mol. Inputs: E_std in Volts (standard electrode potential); n (number of electrons in the half-reaction; integer-valued but accept float input, must be > 0); Q > 0 (dimensionless reaction quotient); T > 0 in Kelvin. The function must handle non-standard temperature explicitly — students commonly assume T = 298.15 K and use the shorthand 0.0592/n at base-10, which is wrong at any other temperature. Raise ValueError if n <= 0, Q <= 0, or T <= 0.",
+  "reference_solution": "import math\n\ndef nernst_half_cell(E_std: float, n: float, Q: float, T: float) -> float:\n    R = 8.31446\n    F = 96485.33212\n    if n <= 0:\n        raise ValueError(\"n must be positive\")\n    if Q <= 0:\n        raise ValueError(\"Q must be positive\")\n    if T <= 0:\n        raise ValueError(\"T must be positive\")\n    return E_std - (R * T / (n * F)) * math.log(Q)\n",
+  "test_cases": [
+    {
+      "name": "standard_conditions_Q_equals_one",
+      "description": "Q = 1 → ln(Q) = 0 → E = E_std regardless of T. Cu²⁺/Cu, E° = 0.34 V.",
+      "inputs": { "E_std": 0.34, "n": 2, "Q": 1.0, "T": 298.15 },
+      "expected": { "E_V": 0.34, "atol": 1.0e-9 }
+    },
+    {
+      "name": "cu_low_concentration_298K",
+      "description": "Cu²⁺/Cu, Q = 0.01 ([Cu²⁺] reduced), T = 298 K → E shifts by ~+0.059 V. Expected: 0.39913 V.",
+      "inputs": { "E_std": 0.34, "n": 2, "Q": 0.01, "T": 298.0 },
+      "expected": { "E_V_within_eps": [0.39908, 0.39918] }
+    },
+    {
+      "name": "cu_low_concentration_350K",
+      "description": "Same as above but T = 350 K. Higher T → larger Nernstian shift. Expected: 0.40945 V.",
+      "inputs": { "E_std": 0.34, "n": 2, "Q": 0.01, "T": 350.0 },
+      "expected": { "E_V_within_eps": [0.40940, 0.40950] }
+    },
+    {
+      "name": "single_electron_iron",
+      "description": "Fe³⁺/Fe²⁺ (E° = 0.77 V), n = 1, Q = 10 (excess Fe²⁺), T = 298 K. Expected: 0.71087 V.",
+      "inputs": { "E_std": 0.77, "n": 1, "Q": 10.0, "T": 298.0 },
+      "expected": { "E_V_within_eps": [0.71082, 0.71092] }
+    },
+    {
+      "name": "rejects_zero_electrons",
+      "inputs": { "E_std": 0.34, "n": 0, "Q": 0.01, "T": 298.0 },
+      "expected": { "raises": "ValueError" }
+    },
+    {
+      "name": "rejects_zero_temperature",
+      "inputs": { "E_std": 0.34, "n": 2, "Q": 0.01, "T": 0.0 },
+      "expected": { "raises": "ValueError" }
+    }
+  ],
+  "verification_targets": {
+    "dimensional": {
+      "lhs_label": "E  [V]",
+      "lhs_dims": { "L": 2, "M": 1, "T": -3, "I": -1 },
+      "rhs_label": "E_std - (R T / (n F)) ln Q  [V - (J/(mol·K) · K)/(mol⁻¹ · C/mol) = V]",
+      "rhs_dims": { "L": 2, "M": 1, "T": -3, "I": -1 }
+    },
+    "limits": [
+      "Q = 1: E = E_std for all T (logarithm vanishes).",
+      "T → 0: thermodynamic correction vanishes; E → E_std.",
+      "n → ∞ at fixed Q: Nernst correction vanishes (large-charge electrode is concentration-insensitive)."
+    ],
+    "validation_envelopes": {
+      "gas_constant_J_per_mol_K": [8.31445, 8.31447],
+      "faraday_C_per_mol": [96485.33, 96485.34]
+    }
+  }
+}

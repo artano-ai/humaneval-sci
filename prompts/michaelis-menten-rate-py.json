@@ -1,0 +1,40 @@
+{
+  "id": "michaelis-menten-rate-py",
+  "card_ids": ["michaelis-menten-enzyme-kinetics"],
+  "domain": "biology-enzyme-kinetics",
+  "language": "python",
+  "prompt": "Write a Python function `mm_rate(S, V_max, K_M)` that returns the reaction rate v predicted by the Michaelis-Menten equation: v = V_max * S / (K_M + S). Inputs may be scalar or numpy arrays for S; V_max and K_M are scalars. The function must handle S = 0 (returning 0) without division-by-zero errors.",
+  "reference_solution": "import numpy as np\n\ndef mm_rate(S, V_max: float, K_M: float):\n    S_arr = np.asarray(S, dtype=float)\n    return V_max * S_arr / (K_M + S_arr)\n",
+  "test_cases": [
+    {
+      "name": "rate_at_zero_substrate",
+      "inputs": { "S": 0.0, "V_max": 100.0, "K_M": 1.0 },
+      "expected": { "v": 0.0, "atol": 1e-9 }
+    },
+    {
+      "name": "half_max_at_S_equals_KM",
+      "description": "At S = K_M the rate must be exactly V_max / 2 (operational definition of K_M).",
+      "inputs": { "S": 2.0, "V_max": 100.0, "K_M": 2.0 },
+      "expected": { "v": 50.0, "atol": 1e-9 }
+    },
+    {
+      "name": "saturation_at_high_S",
+      "description": "For S >> K_M the rate must approach V_max.",
+      "inputs": { "S": 1000.0, "V_max": 100.0, "K_M": 1.0 },
+      "expected": { "v_within_eps": [99.5, 100.0] }
+    }
+  ],
+  "verification_targets": {
+    "dimensional": {
+      "lhs_label": "v  [concentration / time]",
+      "lhs_dims": { "N": 1, "L": -3, "T": -1 },
+      "rhs_label": "V_max [conc/time] * S [conc] / (K_M + S) [conc]",
+      "rhs_dims": { "N": 1, "L": -3, "T": -1 }
+    },
+    "limits": [
+      "[S] -> 0:  v -> (V_max / K_M) * S  (linear, first-order)",
+      "[S] = K_M:  v = V_max / 2",
+      "[S] -> infinity:  v -> V_max  (saturation)"
+    ]
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "id": "cauchy-schwarz-ratio-py",
+  "card_ids": ["cauchy-schwarz-inequality"],
+  "domain": "mathematics-analysis",
+  "language": "python",
+  "prompt": "Write a Python function `cauchy_schwarz_ratio(u, v)` that returns |<u, v>| / (||u|| ||v||) for two non-zero real vectors u and v passed as lists or 1-D numpy arrays of the same length. By the Cauchy-Schwarz inequality the result lies in [0, 1], with equality 1 iff u and v are collinear. Raise ValueError if the vectors have different lengths or if either has zero norm.",
+  "reference_solution": "import numpy as np\n\ndef cauchy_schwarz_ratio(u, v) -> float:\n    u = np.asarray(u, dtype=float)\n    v = np.asarray(v, dtype=float)\n    if u.shape != v.shape:\n        raise ValueError(\"u and v must have the same length\")\n    norm_u = float(np.linalg.norm(u))\n    norm_v = float(np.linalg.norm(v))\n    if norm_u == 0 or norm_v == 0:\n        raise ValueError(\"vectors must have non-zero norm\")\n    return abs(float(np.dot(u, v))) / (norm_u * norm_v)\n",
+  "test_cases": [
+    {
+      "name": "collinear_equals_one",
+      "description": "Parallel vectors saturate the inequality.",
+      "inputs": { "u": [1.0, 2.0, 3.0], "v": [2.0, 4.0, 6.0] },
+      "expected": { "ratio": 1.0, "atol": 1e-12 }
+    },
+    {
+      "name": "orthogonal_equals_zero",
+      "inputs": { "u": [1.0, 0.0], "v": [0.0, 1.0] },
+      "expected": { "ratio": 0.0, "atol": 1e-12 }
+    },
+    {
+      "name": "anti_collinear_equals_one",
+      "description": "Antiparallel vectors also saturate (absolute value).",
+      "inputs": { "u": [1.0, 1.0], "v": [-1.0, -1.0] },
+      "expected": { "ratio": 1.0, "atol": 1e-12 }
+    },
+    {
+      "name": "rejects_mismatched_lengths",
+      "inputs": { "u": [1.0, 2.0], "v": [1.0, 2.0, 3.0] },
+      "expected": { "raises": "ValueError" }
+    },
+    {
+      "name": "rejects_zero_vector",
+      "inputs": { "u": [0.0, 0.0], "v": [1.0, 1.0] },
+      "expected": { "raises": "ValueError" }
+    }
+  ],
+  "verification_targets": {
+    "dimensional": {
+      "lhs_label": "|<u,v>| / (||u|| ||v||)  [dimensionless]",
+      "lhs_dims": {},
+      "rhs_label": "Cauchy-Schwarz ratio  [dimensionless]",
+      "rhs_dims": {}
+    },
+    "limits": [
+      "u parallel to v:  ratio = 1  (equality case of Cauchy-Schwarz)",
+      "u orthogonal to v:  ratio = 0",
+      "for all u, v with non-zero norm:  ratio <= 1  (the inequality itself)"
+    ]
+  }
+}

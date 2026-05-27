@@ -1,0 +1,47 @@
+{
+  "id": "hardy-weinberg-py",
+  "card_ids": ["hardy-weinberg-equilibrium"],
+  "domain": "biology-population-genetics",
+  "language": "python",
+  "prompt": "Write a Python function `genotype_frequencies(p)` that, given the allele frequency p of one allele in a diallelic locus at Hardy-Weinberg equilibrium, returns a numpy array `[f_AA, f_Aa, f_aa]` of the three genotype frequencies: f_AA = p^2, f_Aa = 2 p (1 - p), f_aa = (1 - p)^2. Raise ValueError if p is outside [0, 1].",
+  "reference_solution": "import numpy as np\n\ndef genotype_frequencies(p: float) -> np.ndarray:\n    if p < 0 or p > 1:\n        raise ValueError(\"allele frequency p must lie in [0, 1]\")\n    q = 1.0 - p\n    return np.array([p * p, 2.0 * p * q, q * q])\n",
+  "test_cases": [
+    {
+      "name": "equal_allele_frequencies",
+      "description": "p = 0.5 -> (0.25, 0.5, 0.25).",
+      "inputs": { "p": 0.5 },
+      "expected": { "freqs": [0.25, 0.5, 0.25], "atol": 1e-12 }
+    },
+    {
+      "name": "fixation_of_A",
+      "description": "p = 1 -> only AA homozygotes.",
+      "inputs": { "p": 1.0 },
+      "expected": { "freqs": [1.0, 0.0, 0.0], "atol": 1e-12 }
+    },
+    {
+      "name": "rare_allele",
+      "description": "p = 0.1 -> (0.01, 0.18, 0.81).",
+      "inputs": { "p": 0.1 },
+      "expected": { "freqs": [0.01, 0.18, 0.81], "atol": 1e-9 }
+    },
+    {
+      "name": "rejects_p_above_one",
+      "inputs": { "p": 1.5 },
+      "expected": { "raises": "ValueError" }
+    }
+  ],
+  "verification_targets": {
+    "dimensional": {
+      "lhs_label": "[f_AA, f_Aa, f_aa]  [dimensionless]",
+      "lhs_dims": {},
+      "rhs_label": "[p^2, 2 p (1-p), (1-p)^2]  [dimensionless]",
+      "rhs_dims": {}
+    },
+    "limits": [
+      "p = 0:  (0, 0, 1)  (allele a fixed)",
+      "p = 1:  (1, 0, 0)  (allele A fixed)",
+      "frequencies sum to 1:  f_AA + f_Aa + f_aa = 1 for all p"
+    ],
+    "conservation_laws": ["particle-number"]
+  }
+}

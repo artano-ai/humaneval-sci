@@ -1,0 +1,54 @@
+{
+  "id": "hookes-law-strain-energy-py",
+  "card_ids": ["hookes-law-stress-strain"],
+  "domain": "engineering-solid-mechanics",
+  "language": "python",
+  "prompt": "Write a Python function `strain_energy_density(sigma, E)` that returns the elastic strain-energy density u (J/m^3) stored in a Hookean material under uniaxial stress σ (Pa) with Young's modulus E (Pa, positive): u = (1/2) σ^2 / E (equivalent to (1/2) σ ε). Raise ValueError if E <= 0.",
+  "reference_solution": "def strain_energy_density(sigma: float, E: float) -> float:\n    if E <= 0:\n        raise ValueError(\"Young's modulus E must be positive\")\n    return 0.5 * sigma * sigma / E\n",
+  "test_cases": [
+    {
+      "name": "steel_at_200_mpa",
+      "description": "E=200 GPa, σ=200 MPa -> u = 0.5 * (2e8)^2 / 2e11 = 1e5 J/m^3.",
+      "inputs": { "sigma": 2.0e8, "E": 200e9 },
+      "expected": { "u_within_eps": [9.99e4, 1.001e5] }
+    },
+    {
+      "name": "zero_stress_zero_energy",
+      "inputs": { "sigma": 0.0, "E": 200e9 },
+      "expected": { "u": 0.0, "atol": 1e-15 }
+    },
+    {
+      "name": "compression_same_energy_as_tension",
+      "description": "u is even in σ: compressive and tensile equal-magnitude stresses store equal energy.",
+      "inputs_a": { "sigma": 1.5e8, "E": 70e9 },
+      "inputs_b": { "sigma": -1.5e8, "E": 70e9 },
+      "expected": { "u_b_over_u_a": [0.999, 1.001] }
+    },
+    {
+      "name": "quadratic_in_stress",
+      "description": "Doubling σ quadruples u.",
+      "inputs_a": { "sigma": 1.0e8, "E": 200e9 },
+      "inputs_b": { "sigma": 2.0e8, "E": 200e9 },
+      "expected": { "u_b_over_u_a": [3.99, 4.01] }
+    },
+    {
+      "name": "rejects_negative_modulus",
+      "inputs": { "sigma": 1.0e8, "E": -1.0 },
+      "expected": { "raises": "ValueError" }
+    }
+  ],
+  "verification_targets": {
+    "dimensional": {
+      "lhs_label": "u  [J/m^3]",
+      "lhs_dims": { "L": -1, "M": 1, "T": -2 },
+      "rhs_label": "(1/2) σ^2 / E  [J/m^3]",
+      "rhs_dims": { "L": -1, "M": 1, "T": -2 }
+    },
+    "limits": [
+      "σ = 0:  u = 0  (no energy at zero stress)",
+      "u(σ) = u(-σ):  energy is even in σ (no preferred direction)",
+      "elastic regime only:  u beyond yield not modelled"
+    ],
+    "conservation_laws": ["energy"]
+  }
+}

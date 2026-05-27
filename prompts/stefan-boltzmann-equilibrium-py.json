@@ -1,0 +1,43 @@
+{
+  "id": "stefan-boltzmann-equilibrium-py",
+  "card_ids": ["stefan-boltzmann-radiation"],
+  "domain": "climate-radiative",
+  "language": "python",
+  "prompt": "Write a Python function `equilibrium_temperature(S, albedo)` that returns the no-atmosphere equilibrium temperature (kelvin) of a planet from the Stefan-Boltzmann balance:  sigma T_eq^4 = (1 - albedo) * S / 4.  Inputs: solar constant S (W/m^2), Bond albedo (0 <= albedo < 1, dimensionless). Use sigma = 5.670374419e-8 W m^-2 K^-4. Raise ValueError if albedo is outside [0, 1) or if S <= 0.",
+  "reference_solution": "def equilibrium_temperature(S: float, albedo: float) -> float:\n    sigma = 5.670374419e-8\n    if not (0.0 <= albedo < 1.0):\n        raise ValueError(\"albedo must be in [0, 1)\")\n    if S <= 0:\n        raise ValueError(\"solar constant S must be positive\")\n    return ((1.0 - albedo) * S / (4.0 * sigma)) ** 0.25\n",
+  "test_cases": [
+    {
+      "name": "earth_no_atmosphere",
+      "description": "Earth: S=1361 W/m^2, albedo=0.3 -> T_eq ~ 254.6 K (standard textbook value).",
+      "inputs": { "S": 1361.0, "albedo": 0.3 },
+      "expected": { "T_within_eps": [254.0, 256.0] }
+    },
+    {
+      "name": "perfect_absorber",
+      "description": "albedo=0, full solar absorption, Earth orbit -> T_eq ~ 278.6 K.",
+      "inputs": { "S": 1361.0, "albedo": 0.0 },
+      "expected": { "T_within_eps": [278.0, 280.0] }
+    },
+    {
+      "name": "rejects_albedo_one",
+      "description": "albedo = 1.0 (perfect mirror) is non-physical (no absorption -> T undefined); must raise.",
+      "inputs": { "S": 1361.0, "albedo": 1.0 },
+      "expected": { "raises": "ValueError" }
+    }
+  ],
+  "verification_targets": {
+    "dimensional": {
+      "lhs_label": "sigma T^4  [W/m^2]",
+      "lhs_dims": { "M": 1, "T": -3 },
+      "rhs_label": "(1 - alpha) S / 4  [W/m^2]",
+      "rhs_dims": { "M": 1, "T": -3 }
+    },
+    "limits": [
+      "T = 0: P/A = 0",
+      "small delta T: dF/dT = 4 sigma T^3 (Planck feedback)"
+    ],
+    "validation_envelopes": {
+      "stefanBoltzmannSigma_W_per_m2K4": [5.670374e-8, 5.670375e-8]
+    }
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "id": "michaelis-menten-vmax-from-data-py",
+  "card_ids": ["michaelis-menten-enzyme-kinetics"],
+  "domain": "biology-enzyme-kinetics",
+  "language": "python",
+  "prompt": "Write a Python function `vmax_from_single_point(S, v, K_M)` that infers V_max (rate units) from a single measured (substrate, rate) data point and a known Michaelis constant K_M, by inverting v = V_max S / (K_M + S):  V_max = v (K_M + S) / S. Inputs: substrate concentration S > 0, measured rate v > 0, Michaelis constant K_M > 0. Raise ValueError if any input is non-positive.",
+  "reference_solution": "def vmax_from_single_point(S: float, v: float, K_M: float) -> float:\n    if S <= 0:\n        raise ValueError(\"S must be positive\")\n    if v <= 0:\n        raise ValueError(\"v must be positive\")\n    if K_M <= 0:\n        raise ValueError(\"K_M must be positive\")\n    return v * (K_M + S) / S\n",
+  "test_cases": [
+    {
+      "name": "half_saturation_point",
+      "description": "S = K_M -> v = V_max / 2 -> recovery: V_max = 2 v.",
+      "inputs": { "S": 1.0, "v": 50.0, "K_M": 1.0 },
+      "expected": { "V_max": 100.0, "atol": 1e-9 }
+    },
+    {
+      "name": "high_S_recovers_vmax",
+      "description": "S >> K_M: v ≈ V_max -> recovered V_max ≈ v (small correction).",
+      "inputs": { "S": 1000.0, "v": 99.9, "K_M": 1.0 },
+      "expected": { "V_max_within_eps": [99.99, 100.01] }
+    },
+    {
+      "name": "low_S_first_order",
+      "description": "S << K_M: V_max = v K_M / S.",
+      "inputs": { "S": 0.01, "v": 1.0, "K_M": 1.0 },
+      "expected": { "V_max_within_eps": [100.99, 101.01] }
+    },
+    {
+      "name": "rejects_zero_substrate",
+      "inputs": { "S": 0.0, "v": 50.0, "K_M": 1.0 },
+      "expected": { "raises": "ValueError" }
+    }
+  ],
+  "verification_targets": {
+    "dimensional": {
+      "lhs_label": "V_max  [conc/time]",
+      "lhs_dims": { "T": -1 },
+      "rhs_label": "v (K_M + S) / S  [conc/time]",
+      "rhs_dims": { "T": -1 }
+    },
+    "limits": [
+      "S = K_M:  V_max = 2 v  (operational definition of K_M)",
+      "S -> infinity:  V_max -> v  (substrate saturation)",
+      "S -> 0:  V_max -> v K_M / S -> infinity for finite v"
+    ]
+  }
+}

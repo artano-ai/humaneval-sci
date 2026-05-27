@@ -1,0 +1,55 @@
+{
+  "id": "simple-harmonic-oscillator-py",
+  "card_ids": ["simple-harmonic-oscillator"],
+  "domain": "physics-classical-mechanics",
+  "language": "python",
+  "prompt": "Write a Python function `position(A, omega, t, phi=0.0)` that returns the displacement of a simple harmonic oscillator at time t: x(t) = A * cos(omega * t + phi). Inputs: amplitude A (m), angular frequency omega (rad/s, positive), time t (s), optional phase phi (rad, default 0). Raise ValueError if A <= 0 or omega <= 0.",
+  "reference_solution": "import math\n\ndef position(A: float, omega: float, t: float, phi: float = 0.0) -> float:\n    if A <= 0:\n        raise ValueError(\"amplitude A must be positive\")\n    if omega <= 0:\n        raise ValueError(\"angular frequency omega must be positive\")\n    return A * math.cos(omega * t + phi)\n",
+  "test_cases": [
+    {
+      "name": "starts_at_amplitude",
+      "description": "At t=0 with phi=0, the oscillator is at its peak.",
+      "inputs": { "A": 1.0, "omega": 6.28318530718, "t": 0.0 },
+      "expected": { "x": 1.0, "atol": 1e-9 }
+    },
+    {
+      "name": "quarter_period_crosses_zero",
+      "description": "At t = T/4 = pi/(2*omega), x = 0 (for phi=0).",
+      "inputs": { "A": 2.5, "omega": 6.28318530718, "t": 0.25 },
+      "expected": { "x_within_eps": [-1e-6, 1e-6] }
+    },
+    {
+      "name": "half_period_negates",
+      "description": "At t = T/2 = pi/omega, x = -A.",
+      "inputs": { "A": 1.0, "omega": 6.28318530718, "t": 0.5 },
+      "expected": { "x_within_eps": [-1.0001, -0.9999] }
+    },
+    {
+      "name": "rejects_negative_amplitude",
+      "inputs": { "A": -1.0, "omega": 1.0, "t": 0.0 },
+      "expected": { "raises": "ValueError" }
+    },
+    {
+      "name": "rejects_zero_frequency",
+      "inputs": { "A": 1.0, "omega": 0.0, "t": 0.0 },
+      "expected": { "raises": "ValueError" }
+    }
+  ],
+  "verification_targets": {
+    "dimensional": {
+      "lhs_label": "x(t)  [m]",
+      "lhs_dims": { "L": 1 },
+      "rhs_label": "A cos(omega t + phi)  [m]",
+      "rhs_dims": { "L": 1 }
+    },
+    "limits": [
+      "t = 0, phi = 0:  x = A",
+      "t = T/4 = pi/(2 omega), phi = 0:  x = 0",
+      "energy_conservation: (1/2) m v^2 + (1/2) k x^2 = (1/2) k A^2 = const"
+    ],
+    "conservation_laws": ["energy"],
+    "validation_envelopes": {
+      "omega_one_period_seconds": [0.9, 1.1]
+    }
+  }
+}

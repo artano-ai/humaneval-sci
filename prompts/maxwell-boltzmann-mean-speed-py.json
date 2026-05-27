@@ -1,0 +1,54 @@
+{
+  "id": "maxwell-boltzmann-mean-speed-py",
+  "card_ids": ["maxwell-boltzmann-speed-distribution"],
+  "domain": "physics-statistical-mechanics",
+  "language": "python",
+  "prompt": "Write a Python function `mean_speed(T, M)` that returns the mean molecular speed of an ideal gas in m/s, using the Maxwell-Boltzmann distribution. Inputs: temperature T (Kelvin, must be positive), molar mass M (kg/mol, must be positive). Use R = 8.314462618 J/(mol·K). Formula: <v> = sqrt(8 R T / (pi M)). Raise ValueError if T <= 0 or M <= 0.",
+  "reference_solution": "import math\n\ndef mean_speed(T: float, M: float) -> float:\n    R = 8.314462618\n    if T <= 0:\n        raise ValueError(\"temperature T must be positive (kelvin)\")\n    if M <= 0:\n        raise ValueError(\"molar mass M must be positive\")\n    return math.sqrt(8.0 * R * T / (math.pi * M))\n",
+  "test_cases": [
+    {
+      "name": "nitrogen_room_temperature",
+      "description": "N2 (M=0.028 kg/mol) at 300 K -> ~475 m/s.",
+      "inputs": { "T": 300.0, "M": 0.028 },
+      "expected": { "v_within_eps": [473.0, 477.0] }
+    },
+    {
+      "name": "helium_room_temperature",
+      "description": "He (M=0.004 kg/mol) at 300 K -> ~1257 m/s.",
+      "inputs": { "T": 300.0, "M": 0.004 },
+      "expected": { "v_within_eps": [1250.0, 1265.0] }
+    },
+    {
+      "name": "scales_as_sqrt_T",
+      "description": "Quadrupling T doubles <v>.",
+      "inputs_a": { "T": 100.0, "M": 0.028 },
+      "inputs_b": { "T": 400.0, "M": 0.028 },
+      "expected": { "v_b_over_v_a": [1.99, 2.01] }
+    },
+    {
+      "name": "rejects_negative_temperature",
+      "inputs": { "T": -1.0, "M": 0.028 },
+      "expected": { "raises": "ValueError" }
+    },
+    {
+      "name": "rejects_zero_mass",
+      "inputs": { "T": 300.0, "M": 0.0 },
+      "expected": { "raises": "ValueError" }
+    }
+  ],
+  "verification_targets": {
+    "dimensional": {
+      "lhs_label": "<v>  [m/s]",
+      "lhs_dims": { "L": 1, "T": -1 },
+      "rhs_label": "sqrt(8 R T / (pi M))  [m/s]",
+      "rhs_dims": { "L": 1, "T": -1 }
+    },
+    "limits": [
+      "T -> 0:  <v> -> 0  (zero kinetic energy at absolute zero)",
+      "scales as sqrt(T):  <v>(4T) = 2 <v>(T)"
+    ],
+    "validation_envelopes": {
+      "gasConstantR_J_per_mol_K": [8.31446, 8.31447]
+    }
+  }
+}

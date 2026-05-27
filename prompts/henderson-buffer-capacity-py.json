@@ -1,0 +1,59 @@
+{
+  "id": "henderson-buffer-capacity-py",
+  "card_ids": ["henderson-hasselbalch-equation"],
+  "domain": "chemistry-equilibrium",
+  "language": "python",
+  "prompt": "Write a Python function `buffer_capacity(C_T, pKa, pH)` that returns the differential buffer capacity beta = dC_b/dpH (in mol/(L·pH unit)) of a monoprotic buffer at the specified pH. The closed-form: beta = ln(10) * C_T * Ka * [H+] / (Ka + [H+])^2 where Ka = 10^(-pKa) and [H+] = 10^(-pH). Equivalently, with x = [H+]/Ka: beta = ln(10) * C_T * x / (1 + x)^2. The maximum is beta_max = (ln 10 / 4) * C_T ≈ 0.5757 * C_T, attained at pH = pKa. Inputs: C_T > 0 (total buffer concentration, mol/L); pKa (any real); pH (any real, 0 to 14 typical). Raise ValueError if C_T <= 0.",
+  "reference_solution": "import math\n\ndef buffer_capacity(C_T: float, pKa: float, pH: float) -> float:\n    if C_T <= 0:\n        raise ValueError(\"C_T must be positive\")\n    Ka = 10.0 ** (-pKa)\n    H  = 10.0 ** (-pH)\n    return math.log(10.0) * C_T * Ka * H / (Ka + H) ** 2\n",
+  "test_cases": [
+    {
+      "name": "acetate_at_pKa_maximum",
+      "description": "Acetate buffer, C_T = 0.1 M, pKa = 4.76, pH = 4.76 → maximum capacity ≈ 0.0576 mol/(L·pH).",
+      "inputs": { "C_T": 0.1, "pKa": 4.76, "pH": 4.76 },
+      "expected": { "beta_within_eps": [0.05750, 0.05770] }
+    },
+    {
+      "name": "acetate_one_unit_above_pKa",
+      "description": "Same buffer, pH = 5.76 (1 unit above pKa). Capacity drops by symmetric factor (1+r)^2/(4r) where r = 10. Result ≈ 0.0190.",
+      "inputs": { "C_T": 0.1, "pKa": 4.76, "pH": 5.76 },
+      "expected": { "beta_within_eps": [0.01900, 0.01910] }
+    },
+    {
+      "name": "acetate_one_unit_below_pKa",
+      "description": "By symmetry around pKa, pH = 3.76 gives the same capacity as pH = 5.76 ≈ 0.0190.",
+      "inputs": { "C_T": 0.1, "pKa": 4.76, "pH": 3.76 },
+      "expected": { "beta_within_eps": [0.01900, 0.01910] }
+    },
+    {
+      "name": "dilute_buffer_scales_linearly",
+      "description": "C_T = 0.01 M at pH = pKa → beta = 0.01·ln(10)/4 ≈ 0.005757 mol/(L·pH) (10× dilution → 10× weaker buffer).",
+      "inputs": { "C_T": 0.01, "pKa": 4.76, "pH": 4.76 },
+      "expected": { "beta_within_eps": [0.005750, 0.005770] }
+    },
+    {
+      "name": "far_from_pKa_negligible_buffering",
+      "description": "C_T = 0.1, pKa = 7, pH = 3 → 4 pH units below pKa. r = 10^4 → beta ≈ 0.1·ln(10)·1e-4/(1+1e-4)^2 ≈ 2.30e-5.",
+      "inputs": { "C_T": 0.1, "pKa": 7.0, "pH": 3.0 },
+      "expected": { "beta_within_eps": [2.0e-5, 2.6e-5] }
+    },
+    {
+      "name": "rejects_zero_concentration",
+      "inputs": { "C_T": 0.0, "pKa": 4.76, "pH": 4.76 },
+      "expected": { "raises": "ValueError" }
+    }
+  ],
+  "verification_targets": {
+    "dimensional": {
+      "lhs_label": "beta  [mol/(L · pH unit)]",
+      "lhs_dims": {},
+      "rhs_label": "ln(10) · C_T · Ka · [H+] / (Ka + [H+])^2  [(mol/L) · 1 = mol/(L·pH)]",
+      "rhs_dims": {}
+    },
+    "limits": [
+      "pH = pKa: beta = beta_max = (ln 10 / 4) C_T ≈ 0.5757 C_T.",
+      "pH → ±∞ relative to pKa: beta → 0 (no buffering far from titration midpoint).",
+      "Symmetric in pH around pKa: beta(pKa + Δ) = beta(pKa − Δ)."
+    ],
+    "validation_envelopes": {}
+  }
+}

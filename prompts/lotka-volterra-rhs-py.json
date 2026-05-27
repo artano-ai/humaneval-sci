@@ -1,0 +1,46 @@
+{
+  "id": "lotka-volterra-rhs-py",
+  "card_ids": ["lotka-volterra-predator-prey"],
+  "domain": "biology-population-dynamics",
+  "language": "python",
+  "prompt": "Write a Python function `lotka_volterra_rhs(x, y, alpha, beta, delta, gamma)` that returns the right-hand side of the classical Lotka-Volterra predator-prey ODE as a numpy array `[dx/dt, dy/dt]`. Equations: dx/dt = alpha*x - beta*x*y (prey),  dy/dt = delta*x*y - gamma*y (predator). Inputs: prey population x >= 0, predator population y >= 0, rates alpha, beta, delta, gamma > 0. Raise ValueError if any rate is non-positive or if x or y is negative.",
+  "reference_solution": "import numpy as np\n\ndef lotka_volterra_rhs(x: float, y: float, alpha: float, beta: float, delta: float, gamma: float) -> np.ndarray:\n    if alpha <= 0 or beta <= 0 or delta <= 0 or gamma <= 0:\n        raise ValueError(\"all rate parameters must be positive\")\n    if x < 0 or y < 0:\n        raise ValueError(\"populations must be non-negative\")\n    return np.array([alpha * x - beta * x * y, delta * x * y - gamma * y])\n",
+  "test_cases": [
+    {
+      "name": "coexistence_fixed_point",
+      "description": "At x* = gamma/delta, y* = alpha/beta both derivatives are zero.",
+      "inputs": { "x": 2.0, "y": 1.0, "alpha": 1.0, "beta": 1.0, "delta": 0.5, "gamma": 1.0 },
+      "expected": { "derivs": [0.0, 0.0], "atol": 1e-12 }
+    },
+    {
+      "name": "no_predators_prey_grows",
+      "description": "y = 0 -> dx/dt = alpha x  (Malthusian growth).",
+      "inputs": { "x": 10.0, "y": 0.0, "alpha": 0.5, "beta": 1.0, "delta": 0.5, "gamma": 1.0 },
+      "expected": { "derivs": [5.0, 0.0], "atol": 1e-12 }
+    },
+    {
+      "name": "no_prey_predator_decays",
+      "description": "x = 0, y > 0 -> dy/dt = -gamma y (exponential decay of predators).",
+      "inputs": { "x": 0.0, "y": 5.0, "alpha": 1.0, "beta": 1.0, "delta": 0.5, "gamma": 0.4 },
+      "expected": { "derivs": [0.0, -2.0], "atol": 1e-12 }
+    },
+    {
+      "name": "rejects_negative_rate",
+      "inputs": { "x": 1.0, "y": 1.0, "alpha": -1.0, "beta": 1.0, "delta": 0.5, "gamma": 1.0 },
+      "expected": { "raises": "ValueError" }
+    }
+  ],
+  "verification_targets": {
+    "dimensional": {
+      "lhs_label": "[dx/dt, dy/dt]  [1/time]",
+      "lhs_dims": { "T": -1 },
+      "rhs_label": "[alpha x - beta x y, delta x y - gamma y]  [1/time]",
+      "rhs_dims": { "T": -1 }
+    },
+    "limits": [
+      "y = 0:  dx/dt = alpha x  (prey grows exponentially without predator)",
+      "x = 0:  dy/dt = -gamma y  (predator declines without prey)",
+      "x = gamma/delta, y = alpha/beta:  d/dt = 0  (interior fixed point)"
+    ]
+  }
+}

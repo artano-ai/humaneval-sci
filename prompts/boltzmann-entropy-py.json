@@ -1,0 +1,49 @@
+{
+  "id": "boltzmann-entropy-py",
+  "card_ids": ["boltzmann-entropy"],
+  "domain": "physics-statistical-mechanics",
+  "language": "python",
+  "prompt": "Write a Python function `entropy(W)` that returns the Boltzmann entropy S = k_B * ln(W) in J/K, where W is the number of equiprobable microstates (positive integer). Use k_B = 1.380649e-23 J/K (exact, SI). Raise ValueError if W < 1 (entropy of a system with no accessible microstate is undefined).",
+  "reference_solution": "import math\n\ndef entropy(W: float) -> float:\n    k_B = 1.380649e-23\n    if W < 1:\n        raise ValueError(\"W must be >= 1 (number of microstates)\")\n    return k_B * math.log(W)\n",
+  "test_cases": [
+    {
+      "name": "single_microstate",
+      "description": "W = 1 -> S = 0 (third law).",
+      "inputs": { "W": 1.0 },
+      "expected": { "S": 0.0, "atol": 1e-30 }
+    },
+    {
+      "name": "exponential_to_one_kB",
+      "description": "W = e -> S = k_B exactly.",
+      "inputs": { "W": 2.718281828459045 },
+      "expected": { "S_within_eps": [1.3806e-23, 1.3807e-23] }
+    },
+    {
+      "name": "doubling_W_adds_kB_ln2",
+      "description": "S(2W) - S(W) = k_B * ln(2) regardless of W.",
+      "inputs_a": { "W": 100.0 },
+      "inputs_b": { "W": 200.0 },
+      "expected": { "S_b_over_S_a": [1.150, 1.155] }
+    },
+    {
+      "name": "rejects_W_below_one",
+      "inputs": { "W": 0.5 },
+      "expected": { "raises": "ValueError" }
+    }
+  ],
+  "verification_targets": {
+    "dimensional": {
+      "lhs_label": "S  [J/K]",
+      "lhs_dims": { "L": 2, "M": 1, "T": -2, "Theta": -1 },
+      "rhs_label": "k_B ln(W)  [J/K]",
+      "rhs_dims": { "L": 2, "M": 1, "T": -2, "Theta": -1 }
+    },
+    "limits": [
+      "W = 1:  S = 0  (third law of thermodynamics)",
+      "W >> 1:  S ~ k_B ln(W) (monotone increasing in W)"
+    ],
+    "validation_envelopes": {
+      "boltzmannConstant_J_per_K": [1.380648e-23, 1.380650e-23]
+    }
+  }
+}

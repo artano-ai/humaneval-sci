@@ -1,0 +1,46 @@
+{
+  "id": "lotka-volterra-fixed-point-py",
+  "card_ids": ["lotka-volterra-predator-prey"],
+  "domain": "biology-population-dynamics",
+  "language": "python",
+  "prompt": "Write a Python function `coexistence_fixed_point(alpha, beta, delta, gamma)` that returns a numpy array `[x*, y*]` of the interior fixed point of the Lotka-Volterra predator-prey system: x* = gamma / delta (prey), y* = alpha / beta (predator). Inputs: all four rate parameters positive. Raise ValueError if any parameter is non-positive.",
+  "reference_solution": "import numpy as np\n\ndef coexistence_fixed_point(alpha: float, beta: float, delta: float, gamma: float) -> np.ndarray:\n    if alpha <= 0 or beta <= 0 or delta <= 0 or gamma <= 0:\n        raise ValueError(\"all rate parameters must be positive\")\n    return np.array([gamma / delta, alpha / beta])\n",
+  "test_cases": [
+    {
+      "name": "canonical_parameters",
+      "description": "alpha=1, beta=1, delta=0.5, gamma=1 -> (x*, y*) = (2, 1).",
+      "inputs": { "alpha": 1.0, "beta": 1.0, "delta": 0.5, "gamma": 1.0 },
+      "expected": { "fixed_point": [2.0, 1.0], "atol": 1e-12 }
+    },
+    {
+      "name": "doubled_gamma_doubles_x_star",
+      "description": "x* = gamma/delta scales linearly in gamma. At alpha=1, beta=1, delta=1, gamma=2 -> (2, 1).",
+      "inputs": { "alpha": 1.0, "beta": 1.0, "delta": 1.0, "gamma": 2.0 },
+      "expected": { "fixed_point": [2.0, 1.0], "atol": 1e-12 }
+    },
+    {
+      "name": "doubled_alpha_doubles_y_star",
+      "description": "y* = alpha/beta scales linearly in alpha. At alpha=2, beta=1, delta=1, gamma=1 -> (1, 2).",
+      "inputs": { "alpha": 2.0, "beta": 1.0, "delta": 1.0, "gamma": 1.0 },
+      "expected": { "fixed_point": [1.0, 2.0], "atol": 1e-12 }
+    },
+    {
+      "name": "rejects_zero_parameter",
+      "inputs": { "alpha": 0.0, "beta": 1.0, "delta": 0.5, "gamma": 1.0 },
+      "expected": { "raises": "ValueError" }
+    }
+  ],
+  "verification_targets": {
+    "dimensional": {
+      "lhs_label": "(x*, y*)  [individuals]",
+      "lhs_dims": {},
+      "rhs_label": "(gamma/delta, alpha/beta)  [individuals]",
+      "rhs_dims": {}
+    },
+    "limits": [
+      "x* = gamma/delta:  prey population at which predator d/dt = 0",
+      "y* = alpha/beta:  predator population at which prey d/dt = 0",
+      "fixed_point_of_lotka_volterra_rhs(x*, y*) = 0"
+    ]
+  }
+}

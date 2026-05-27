@@ -1,0 +1,45 @@
+{
+  "id": "forward-first-derivative-py",
+  "card_ids": ["finite-difference-truncation-error"],
+  "domain": "numerical-methods-finite-difference",
+  "language": "python",
+  "prompt": "Write a Python function `forward_first_derivative(f_x, f_x_plus_h, h)` that returns the first-order forward-difference estimate f'(x) ≈ (f(x + h) - f(x)) / h. Truncation error is O(h). Raise ValueError if h <= 0.",
+  "reference_solution": "def forward_first_derivative(f_x: float, f_x_plus_h: float, h: float) -> float:\n    if h <= 0:\n        raise ValueError(\"step h must be positive\")\n    return (f_x_plus_h - f_x) / h\n",
+  "test_cases": [
+    {
+      "name": "linear_function_exact",
+      "description": "f(x) = 2 x + 3 at x=0, h=1: f(0)=3, f(1)=5. Forward derivative = 2 (exact).",
+      "inputs": { "f_x": 3.0, "f_x_plus_h": 5.0, "h": 1.0 },
+      "expected": { "df": 2.0, "atol": 1e-12 }
+    },
+    {
+      "name": "constant_function_zero",
+      "inputs": { "f_x": 7.0, "f_x_plus_h": 7.0, "h": 0.5 },
+      "expected": { "df": 0.0, "atol": 1e-12 }
+    },
+    {
+      "name": "x_squared_at_x_equals_1_h_0p1",
+      "description": "f(x)=x^2 at x=1, h=0.1: f(1)=1, f(1.1)=1.21. Estimate=(1.21-1)/0.1=2.1; truncation 0.1 (O(h)).",
+      "inputs": { "f_x": 1.0, "f_x_plus_h": 1.21, "h": 0.1 },
+      "expected": { "df_within_eps": [2.0999, 2.1001] }
+    },
+    {
+      "name": "rejects_zero_h",
+      "inputs": { "f_x": 1.0, "f_x_plus_h": 1.0, "h": 0.0 },
+      "expected": { "raises": "ValueError" }
+    }
+  ],
+  "verification_targets": {
+    "dimensional": {
+      "lhs_label": "f'(x)  [units(f)/units(x)]",
+      "lhs_dims": {},
+      "rhs_label": "(f(x+h) - f(x)) / h  [units(f)/units(x)]",
+      "rhs_dims": {}
+    },
+    "limits": [
+      "h -> 0:  estimate -> exact f'(x)",
+      "exact for linear f: error vanishes for all h > 0",
+      "general f:  estimate = f'(x) + (h/2) f''(x) + O(h^2)  (first-order error)"
+    ]
+  }
+}

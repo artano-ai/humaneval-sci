@@ -1,0 +1,49 @@
+{
+  "id": "bloch-group-velocity-py",
+  "card_ids": ["bloch-theorem"],
+  "domain": "physics-condensed-matter",
+  "language": "python",
+  "prompt": "Write a Python function `tight_binding_group_velocity(t_hopping, a, k)` that returns the group velocity (m/s) of an electron in a 1D tight-binding band, E(k) = -2 t cos(k a). Group velocity is v_g = (1/hbar) dE/dk = (2 t a / hbar) sin(k a). Inputs: t_hopping (hopping integral, J, positive), a (lattice constant, m, positive), k (wavevector, 1/m). Use hbar = 1.054571817e-34 J·s. Raise ValueError if t_hopping <= 0 or a <= 0.",
+  "reference_solution": "import math\n\ndef tight_binding_group_velocity(t_hopping: float, a: float, k: float) -> float:\n    hbar = 1.054571817e-34\n    if t_hopping <= 0:\n        raise ValueError(\"hopping integral t must be positive\")\n    if a <= 0:\n        raise ValueError(\"lattice constant a must be positive\")\n    return (2.0 * t_hopping * a / hbar) * math.sin(k * a)\n",
+  "test_cases": [
+    {
+      "name": "band_minimum_zero_velocity",
+      "description": "k = 0 -> sin(0) = 0 -> v_g = 0 (band minimum, electron at rest).",
+      "inputs": { "t_hopping": 1.602e-19, "a": 1.0e-10, "k": 0.0 },
+      "expected": { "v_g": 0.0, "atol": 1e-3 }
+    },
+    {
+      "name": "band_edge_zero_velocity",
+      "description": "k = pi/a -> sin(pi) = 0 -> v_g = 0 (Brillouin-zone edge).",
+      "inputs": { "t_hopping": 1.602e-19, "a": 1.0e-10, "k": 3.141592653589793e10 },
+      "expected": { "v_g_within_eps": [-1.0, 1.0] }
+    },
+    {
+      "name": "quarter_zone_maximum_velocity",
+      "description": "k = pi/(2 a) -> sin(pi/2) = 1 -> v_g = 2 t a / hbar.",
+      "inputs": { "t_hopping": 1.602e-19, "a": 1.0e-10, "k": 1.5707963267948966e10 },
+      "expected": { "v_g_within_eps": [3.0e5, 3.1e5] }
+    },
+    {
+      "name": "rejects_negative_lattice_constant",
+      "inputs": { "t_hopping": 1.602e-19, "a": -1.0e-10, "k": 0.0 },
+      "expected": { "raises": "ValueError" }
+    }
+  ],
+  "verification_targets": {
+    "dimensional": {
+      "lhs_label": "v_g  [m/s]",
+      "lhs_dims": { "L": 1, "T": -1 },
+      "rhs_label": "(2 t a / hbar) sin(k a)  [m/s]",
+      "rhs_dims": { "L": 1, "T": -1 }
+    },
+    "limits": [
+      "k = 0:  v_g = 0  (band minimum)",
+      "k = pi/(2 a):  v_g = 2 t a / hbar  (maximum, mid-zone)",
+      "k = pi/a:  v_g = 0  (Brillouin-zone boundary)"
+    ],
+    "validation_envelopes": {
+      "reducedPlanck_J_s": [1.054571e-34, 1.054572e-34]
+    }
+  }
+}

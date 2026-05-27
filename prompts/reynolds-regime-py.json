@@ -1,0 +1,53 @@
+{
+  "id": "reynolds-regime-py",
+  "card_ids": ["reynolds-number-similarity"],
+  "domain": "engineering-fluid-dynamics",
+  "language": "python",
+  "prompt": "Write a Python function `flow_regime(Re)` that classifies pipe-flow regime by Reynolds number. Return an integer code: 0 if Re < 2300 (laminar), 1 if 2300 <= Re < 4000 (transitional), 2 if Re >= 4000 (turbulent). Raise ValueError if Re < 0.",
+  "reference_solution": "def flow_regime(Re: float) -> int:\n    if Re < 0:\n        raise ValueError(\"Reynolds number must be non-negative\")\n    if Re < 2300:\n        return 0\n    if Re < 4000:\n        return 1\n    return 2\n",
+  "test_cases": [
+    {
+      "name": "low_Re_laminar",
+      "inputs": { "Re": 100.0 },
+      "expected": { "code": 0, "atol": 0 }
+    },
+    {
+      "name": "just_below_transition",
+      "inputs": { "Re": 2299.0 },
+      "expected": { "code": 0, "atol": 0 }
+    },
+    {
+      "name": "transitional",
+      "inputs": { "Re": 3000.0 },
+      "expected": { "code": 1, "atol": 0 }
+    },
+    {
+      "name": "just_below_turbulent_threshold",
+      "inputs": { "Re": 3999.0 },
+      "expected": { "code": 1, "atol": 0 }
+    },
+    {
+      "name": "fully_turbulent",
+      "inputs": { "Re": 10000.0 },
+      "expected": { "code": 2, "atol": 0 }
+    },
+    {
+      "name": "rejects_negative_Re",
+      "inputs": { "Re": -1.0 },
+      "expected": { "raises": "ValueError" }
+    }
+  ],
+  "verification_targets": {
+    "dimensional": {
+      "lhs_label": "regime  [dimensionless code]",
+      "lhs_dims": {},
+      "rhs_label": "0|1|2  [dimensionless]",
+      "rhs_dims": {}
+    },
+    "limits": [
+      "Re < 2300:  laminar (Hagen-Poiseuille regime applies)",
+      "Re ~ 2300:  laminar-to-transitional onset",
+      "Re >= 4000:  fully turbulent (Reynolds 1883 classical result)"
+    ]
+  }
+}

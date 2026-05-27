@@ -1,0 +1,48 @@
+{
+  "id": "triangle-inequality-py",
+  "card_ids": ["triangle-inequality"],
+  "domain": "mathematics-analysis",
+  "language": "python",
+  "prompt": "Write a Python function `is_valid_triangle(a, b, c)` that returns True iff three side lengths a, b, c (all positive) satisfy the strict triangle inequality — each side is strictly less than the sum of the other two: a + b > c, a + c > b, b + c > a. Degenerate triangles (e.g. (1, 1, 2)) return False. Raise ValueError if any side is non-positive.",
+  "reference_solution": "def is_valid_triangle(a: float, b: float, c: float) -> bool:\n    if a <= 0 or b <= 0 or c <= 0:\n        raise ValueError(\"all sides must be positive\")\n    return (a + b > c) and (a + c > b) and (b + c > a)\n",
+  "test_cases": [
+    {
+      "name": "right_triangle_3_4_5",
+      "inputs": { "a": 3.0, "b": 4.0, "c": 5.0 },
+      "expected": { "valid": true, "atol": 0 }
+    },
+    {
+      "name": "equilateral",
+      "inputs": { "a": 1.0, "b": 1.0, "c": 1.0 },
+      "expected": { "valid": true, "atol": 0 }
+    },
+    {
+      "name": "degenerate_collinear",
+      "description": "(1, 1, 2) collapses to a line: a + b = c, strict inequality fails.",
+      "inputs": { "a": 1.0, "b": 1.0, "c": 2.0 },
+      "expected": { "valid": false, "atol": 0 }
+    },
+    {
+      "name": "impossible_one_too_long",
+      "inputs": { "a": 1.0, "b": 1.0, "c": 3.0 },
+      "expected": { "valid": false, "atol": 0 }
+    },
+    {
+      "name": "rejects_zero_side",
+      "inputs": { "a": 0.0, "b": 1.0, "c": 1.0 },
+      "expected": { "raises": "ValueError" }
+    }
+  ],
+  "verification_targets": {
+    "dimensional": {
+      "lhs_label": "predicate  [dimensionless]",
+      "lhs_dims": {},
+      "rhs_label": "(a+b>c) ∧ (a+c>b) ∧ (b+c>a)  [dimensionless]",
+      "rhs_dims": {}
+    },
+    "limits": [
+      "a + b = c (boundary):  predicate is False  (strict inequality)",
+      "a = b = c:  always True for any positive a (equilateral)"
+    ]
+  }
+}

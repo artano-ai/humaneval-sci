@@ -1,0 +1,56 @@
+{
+  "id": "stefan-boltzmann-power-py",
+  "card_ids": ["stefan-boltzmann-radiation"],
+  "domain": "climate-radiative",
+  "language": "python",
+  "prompt": "Write a Python function `radiated_power(area, temperature, emissivity=1.0)` that returns the total power (W) radiated by a body of surface area A (m^2) at absolute temperature T (K), with optional emissivity ε in [0, 1] (default 1 for a perfect blackbody). Formula: P = ε σ A T^4 with σ = 5.670374419e-8 W·m^-2·K^-4. Raise ValueError if area <= 0, temperature <= 0, or emissivity outside [0, 1].",
+  "reference_solution": "def radiated_power(area: float, temperature: float, emissivity: float = 1.0) -> float:\n    sigma = 5.670374419e-8\n    if area <= 0:\n        raise ValueError(\"area must be positive\")\n    if temperature <= 0:\n        raise ValueError(\"temperature must be positive (kelvin)\")\n    if emissivity < 0 or emissivity > 1:\n        raise ValueError(\"emissivity must be in [0, 1]\")\n    return emissivity * sigma * area * (temperature ** 4)\n",
+  "test_cases": [
+    {
+      "name": "blackbody_room_temperature",
+      "description": "1 m^2 blackbody at 300 K -> ~459 W.",
+      "inputs": { "area": 1.0, "temperature": 300.0, "emissivity": 1.0 },
+      "expected": { "P_within_eps": [458.0, 460.0] }
+    },
+    {
+      "name": "scales_as_T_to_the_fourth",
+      "description": "Doubling T multiplies power by 16.",
+      "inputs_a": { "area": 1.0, "temperature": 300.0, "emissivity": 1.0 },
+      "inputs_b": { "area": 1.0, "temperature": 600.0, "emissivity": 1.0 },
+      "expected": { "P_b_over_P_a": [15.99, 16.01] }
+    },
+    {
+      "name": "emissivity_scales_linearly",
+      "description": "ε = 0.5 -> half the blackbody power.",
+      "inputs_a": { "area": 1.0, "temperature": 300.0, "emissivity": 1.0 },
+      "inputs_b": { "area": 1.0, "temperature": 300.0, "emissivity": 0.5 },
+      "expected": { "P_b_over_P_a": [0.499, 0.501] }
+    },
+    {
+      "name": "rejects_emissivity_above_one",
+      "inputs": { "area": 1.0, "temperature": 300.0, "emissivity": 1.5 },
+      "expected": { "raises": "ValueError" }
+    },
+    {
+      "name": "rejects_zero_area",
+      "inputs": { "area": 0.0, "temperature": 300.0, "emissivity": 1.0 },
+      "expected": { "raises": "ValueError" }
+    }
+  ],
+  "verification_targets": {
+    "dimensional": {
+      "lhs_label": "P  [W]",
+      "lhs_dims": { "L": 2, "M": 1, "T": -3 },
+      "rhs_label": "ε σ A T^4  [W]",
+      "rhs_dims": { "L": 2, "M": 1, "T": -3 }
+    },
+    "limits": [
+      "T = 0:  P = 0  (rest-state, ground level)",
+      "ε = 0:  P = 0  (perfect mirror radiates nothing)",
+      "ε = 1, A = 4 π R^2 sphere:  P = 4 π R^2 σ T^4  (full blackbody sphere)"
+    ],
+    "validation_envelopes": {
+      "stefanBoltzmannSigma_W_per_m2K4": [5.670374e-8, 5.670375e-8]
+    }
+  }
+}

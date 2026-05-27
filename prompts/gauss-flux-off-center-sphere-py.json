@@ -1,0 +1,61 @@
+{
+  "id": "gauss-flux-off-center-sphere-py",
+  "card_ids": ["gauss-law-electricity"],
+  "domain": "physics-electromagnetism",
+  "language": "python",
+  "prompt": "Write a Python function `flux_off_center_sphere(Q, R, d)` that returns the total electric flux Φ (in V·m, i.e. SI units of N·m²/C) through a closed sphere of radius R centred on the origin, due to a single point charge Q located at distance d from the origin along an arbitrary axis. By Gauss's law: if d < R (charge enclosed) → Φ = Q/ε0 regardless of where inside; if d > R (charge outside) → Φ = 0. Use ε0 = 8.8541878128e-12 F/m. Inputs: Q (Coulombs, any sign), R > 0 (m), d >= 0 (m). Raise ValueError if R <= 0, d < 0, or d == R (charge on the surface — singular).",
+  "reference_solution": "def flux_off_center_sphere(Q: float, R: float, d: float) -> float:\n    eps0 = 8.8541878128e-12\n    if R <= 0:\n        raise ValueError(\"R must be positive\")\n    if d < 0:\n        raise ValueError(\"d must be non-negative\")\n    if d == R:\n        raise ValueError(\"charge on the surface: flux singular\")\n    if d < R:\n        return Q / eps0\n    return 0.0\n",
+  "test_cases": [
+    {
+      "name": "off_center_inside_positive_charge",
+      "description": "Q=1 uC, R=1 m, d=0.5 m. Charge inside; Φ = Q/ε0 ≈ 1.12941e5 V·m. The off-center detail is the trap — position inside does not change enclosed charge.",
+      "inputs": { "Q": 1.0e-6, "R": 1.0, "d": 0.5 },
+      "expected": { "flux_V_m_within_eps": [112930.0, 112952.0] }
+    },
+    {
+      "name": "centered_inside_positive_charge",
+      "description": "Q=1 uC at origin, R=1 m, d=0. Same flux as off-center.",
+      "inputs": { "Q": 1.0e-6, "R": 1.0, "d": 0.0 },
+      "expected": { "flux_V_m_within_eps": [112930.0, 112952.0] }
+    },
+    {
+      "name": "negative_charge_inside",
+      "description": "Q=-2 uC, R=2 m, d=1 m. Negative flux: Φ ≈ -2.25881e5 V·m.",
+      "inputs": { "Q": -2.0e-6, "R": 2.0, "d": 1.0 },
+      "expected": { "flux_V_m_within_eps": [-225904.0, -225860.0] }
+    },
+    {
+      "name": "outside_zero_flux",
+      "description": "Q=1 uC, R=0.5 m, d=1.0 m. Charge outside → Φ = 0.",
+      "inputs": { "Q": 1.0e-6, "R": 0.5, "d": 1.0 },
+      "expected": { "flux_V_m": 0.0, "atol": 1.0e-9 }
+    },
+    {
+      "name": "rejects_on_surface",
+      "description": "Charge ON the surface: classical singularity.",
+      "inputs": { "Q": 1.0e-6, "R": 1.0, "d": 1.0 },
+      "expected": { "raises": "ValueError" }
+    },
+    {
+      "name": "rejects_negative_radius",
+      "inputs": { "Q": 1.0e-6, "R": -1.0, "d": 0.5 },
+      "expected": { "raises": "ValueError" }
+    }
+  ],
+  "verification_targets": {
+    "dimensional": {
+      "lhs_label": "Φ  [N·m²/C = V·m]",
+      "lhs_dims": { "L": 3, "M": 1, "T": -3, "I": -1 },
+      "rhs_label": "Q / ε0  [C / (F/m) = V·m]",
+      "rhs_dims": { "L": 3, "M": 1, "T": -3, "I": -1 }
+    },
+    "limits": [
+      "d < R: Φ = Q/ε0 (independent of d — Gauss's law).",
+      "d > R: Φ = 0 (no enclosed charge).",
+      "d = R: singular; convention varies, harness raises."
+    ],
+    "validation_envelopes": {
+      "vacuum_permittivity_F_per_m": [8.8541877e-12, 8.8541879e-12]
+    }
+  }
+}

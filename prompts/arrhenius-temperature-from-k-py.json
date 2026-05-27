@@ -1,0 +1,51 @@
+{
+  "id": "arrhenius-temperature-from-k-py",
+  "card_ids": ["arrhenius-rate-law"],
+  "domain": "chemistry-kinetics",
+  "language": "python",
+  "prompt": "Write a Python function `temperature_for_rate(A, Ea, k)` that inverts the Arrhenius equation to return the absolute temperature T (K) at which a reaction has rate constant k, given the pre-exponential factor A (same units as k) and activation energy Ea (J/mol). Use R = 8.314462618 J/(mol·K). Derivation: k = A exp(-Ea/(R T)) so T = -Ea / (R ln(k/A)). Raise ValueError if A <= 0, Ea <= 0, k <= 0, or k >= A (no real T can produce a rate >= A in the Arrhenius model).",
+  "reference_solution": "import math\n\ndef temperature_for_rate(A: float, Ea: float, k: float) -> float:\n    R = 8.314462618\n    if A <= 0:\n        raise ValueError(\"A must be positive\")\n    if Ea <= 0:\n        raise ValueError(\"Ea must be positive (use forward Arrhenius for Ea=0)\")\n    if k <= 0:\n        raise ValueError(\"k must be positive\")\n    if k >= A:\n        raise ValueError(\"k must be strictly less than A — k >= A is unphysical in Arrhenius model\")\n    return -Ea / (R * math.log(k / A))\n",
+  "test_cases": [
+    {
+      "name": "round_trip_typical_organic",
+      "description": "Forward Arrhenius at T=300 K with A=1e13, Ea=50 kJ/mol gives k ≈ 1.97e4; recover T ≈ 300 K.",
+      "inputs": { "A": 1.0e13, "Ea": 50000.0, "k": 1.9659e4 },
+      "expected": { "T_within_eps": [299.0, 301.0] }
+    },
+    {
+      "name": "round_trip_higher_temperature",
+      "description": "At T=400 K with same A and Ea, k ≈ 3.099e6 -> recover T ≈ 400 K.",
+      "inputs": { "A": 1.0e13, "Ea": 50000.0, "k": 3.099e6 },
+      "expected": { "T_within_eps": [398.0, 402.0] }
+    },
+    {
+      "name": "rejects_k_equal_A",
+      "description": "k = A would require T -> infinity; not allowed.",
+      "inputs": { "A": 1.0e13, "Ea": 50000.0, "k": 1.0e13 },
+      "expected": { "raises": "ValueError" }
+    },
+    {
+      "name": "rejects_k_above_A",
+      "inputs": { "A": 1.0e13, "Ea": 50000.0, "k": 1.0e14 },
+      "expected": { "raises": "ValueError" }
+    },
+    {
+      "name": "rejects_zero_rate",
+      "inputs": { "A": 1.0e13, "Ea": 50000.0, "k": 0.0 },
+      "expected": { "raises": "ValueError" }
+    }
+  ],
+  "verification_targets": {
+    "dimensional": {
+      "lhs_label": "T  [K]",
+      "lhs_dims": { "Theta": 1 },
+      "rhs_label": "-Ea / (R ln(k/A))  [K]",
+      "rhs_dims": { "Theta": 1 }
+    },
+    "limits": [
+      "k -> A:  T -> infinity  (must raise, not return inf)",
+      "k -> 0:  T -> 0+  (must raise on k=0; near-zero gives near-zero T)",
+      "Round-trip:  rate_constant(A, Ea, temperature_for_rate(A, Ea, k)) == k"
+    ]
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "id": "ideal-gas-volume-py",
+  "card_ids": ["ideal-gas-law"],
+  "domain": "chemistry",
+  "language": "python",
+  "prompt": "Write a Python function `gas_volume(n, T, P)` that returns the volume (m^3) occupied by n moles of an ideal gas at absolute temperature T (K) and pressure P (Pa): V = n R T / P, with R = 8.314462618 J/(mol·K). Raise ValueError if any of n, T, P is non-positive.",
+  "reference_solution": "def gas_volume(n: float, T: float, P: float) -> float:\n    R = 8.314462618\n    if n <= 0:\n        raise ValueError(\"moles n must be positive\")\n    if T <= 0:\n        raise ValueError(\"temperature T must be positive\")\n    if P <= 0:\n        raise ValueError(\"pressure P must be positive\")\n    return n * R * T / P\n",
+  "test_cases": [
+    {
+      "name": "one_mole_at_stp",
+      "description": "1 mol at 273.15 K, 101325 Pa -> V ≈ 22.414 L = 0.022414 m^3.",
+      "inputs": { "n": 1.0, "T": 273.15, "P": 101325.0 },
+      "expected": { "V_within_eps": [0.02241, 0.02242] }
+    },
+    {
+      "name": "scales_linearly_in_T",
+      "description": "Isobaric: doubling T doubles V (Charles' law).",
+      "inputs_a": { "n": 1.0, "T": 300.0, "P": 101325.0 },
+      "inputs_b": { "n": 1.0, "T": 600.0, "P": 101325.0 },
+      "expected": { "V_b_over_V_a": [1.99, 2.01] }
+    },
+    {
+      "name": "boyles_law_inverse_in_P",
+      "description": "Isothermal: doubling P halves V (Boyle's law).",
+      "inputs_a": { "n": 1.0, "T": 300.0, "P": 1.0e5 },
+      "inputs_b": { "n": 1.0, "T": 300.0, "P": 2.0e5 },
+      "expected": { "V_b_over_V_a": [0.499, 0.501] }
+    },
+    {
+      "name": "rejects_zero_pressure",
+      "inputs": { "n": 1.0, "T": 300.0, "P": 0.0 },
+      "expected": { "raises": "ValueError" }
+    }
+  ],
+  "verification_targets": {
+    "dimensional": {
+      "lhs_label": "V  [m^3]",
+      "lhs_dims": { "L": 3 },
+      "rhs_label": "n R T / P  [m^3]",
+      "rhs_dims": { "L": 3 }
+    },
+    "limits": [
+      "T -> 0:  V -> 0  (gas collapses)",
+      "P -> infinity:  V -> 0  (compressed to vanishing volume)",
+      "PV = nRT:  invariant of state"
+    ],
+    "validation_envelopes": {
+      "gasConstantR_J_per_mol_K": [8.31446, 8.31447]
+    }
+  }
+}

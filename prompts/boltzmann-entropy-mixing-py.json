@@ -1,0 +1,60 @@
+{
+  "id": "boltzmann-entropy-mixing-py",
+  "card_ids": ["boltzmann-entropy"],
+  "domain": "physics-statistical-mechanics",
+  "language": "python",
+  "prompt": "Write a Python function `entropy_of_mixing(n1, n2, distinguishable=True)` that returns the entropy change ΔS (in J/K) on mixing n1 and n2 moles of two ideal gases at the same temperature and pressure. If `distinguishable=True` (two different species): ΔS = -R · (n1 ln(x1) + n2 ln(x2)) where x_i = n_i / (n1 + n2) is the mole fraction. If `distinguishable=False` (the same species — Gibbs paradox resolved): ΔS = 0. Use R = 8.31446 J/(mol·K). Inputs: n1, n2 (moles, both >= 0; not both zero). Raise ValueError if n1 < 0 or n2 < 0 or n1 + n2 == 0.",
+  "reference_solution": "import math\n\ndef entropy_of_mixing(n1: float, n2: float, distinguishable: bool = True) -> float:\n    R = 8.31446\n    if n1 < 0 or n2 < 0:\n        raise ValueError(\"mole numbers must be non-negative\")\n    total = n1 + n2\n    if total == 0:\n        raise ValueError(\"at least one gas must be present\")\n    if not distinguishable:\n        return 0.0\n    # Handle the n_i = 0 edge: 0 ln 0 = 0 by convention.\n    def term(n, x):\n        return 0.0 if n == 0 else n * math.log(x)\n    x1 = n1 / total\n    x2 = n2 / total\n    return -R * (term(n1, x1) + term(n2, x2))\n",
+  "test_cases": [
+    {
+      "name": "equal_mix_distinguishable",
+      "description": "n1 = n2 = 1 mol of different species: ΔS = 2 R ln 2 ≈ 11.5263 J/K.",
+      "inputs": { "n1": 1.0, "n2": 1.0, "distinguishable": true },
+      "expected": { "deltaS_J_per_K": 11.52629, "atol": 0.01 }
+    },
+    {
+      "name": "equal_mix_indistinguishable_gibbs_paradox",
+      "description": "Same n1 = n2 but distinguishable=False: ΔS = 0 (Gibbs paradox resolved).",
+      "inputs": { "n1": 1.0, "n2": 1.0, "distinguishable": false },
+      "expected": { "deltaS_J_per_K": 0.0, "atol": 1.0e-9 }
+    },
+    {
+      "name": "three_to_one_ratio",
+      "description": "n1 = 3, n2 = 1 mol, distinguishable. ΔS ≈ 18.7020 J/K.",
+      "inputs": { "n1": 3.0, "n2": 1.0, "distinguishable": true },
+      "expected": { "deltaS_J_per_K": 18.70205, "atol": 0.01 }
+    },
+    {
+      "name": "half_mol_each",
+      "description": "n1 = n2 = 0.5: ΔS = R ln 2 ≈ 5.7631 J/K (half of the 1+1 case).",
+      "inputs": { "n1": 0.5, "n2": 0.5, "distinguishable": true },
+      "expected": { "deltaS_J_per_K": 5.76314, "atol": 0.01 }
+    },
+    {
+      "name": "rejects_negative_moles",
+      "inputs": { "n1": -1.0, "n2": 1.0, "distinguishable": true },
+      "expected": { "raises": "ValueError" }
+    },
+    {
+      "name": "rejects_both_zero",
+      "inputs": { "n1": 0.0, "n2": 0.0, "distinguishable": true },
+      "expected": { "raises": "ValueError" }
+    }
+  ],
+  "verification_targets": {
+    "dimensional": {
+      "lhs_label": "ΔS  [J/K]",
+      "lhs_dims": { "L": 2, "M": 1, "T": -2, "Θ": -1 },
+      "rhs_label": "-R (n1 ln x1 + n2 ln x2)  [J/(mol K) · mol = J/K]",
+      "rhs_dims": { "L": 2, "M": 1, "T": -2, "Θ": -1 }
+    },
+    "limits": [
+      "n1 = n2 (and distinguishable): ΔS = 2 R ln 2.",
+      "n1 = 0 or n2 = 0: ΔS = 0 (no mixing occurred).",
+      "Indistinguishable species: ΔS = 0 regardless of n1, n2 (Gibbs paradox)."
+    ],
+    "validation_envelopes": {
+      "gas_constant_J_per_mol_K": [8.31445, 8.31447]
+    }
+  }
+}

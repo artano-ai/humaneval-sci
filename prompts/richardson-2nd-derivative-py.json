@@ -1,0 +1,58 @@
+{
+  "id": "richardson-2nd-derivative-py",
+  "card_ids": ["finite-difference-truncation-error"],
+  "domain": "numerical-methods-finite-difference",
+  "language": "python",
+  "prompt": "Richardson-extrapolated centred 2nd derivative. The standard centred 5-point stencil gives two O(h^2) approximations for f''(x): D(h)  = (f(x+h)  - 2 f(x) + f(x-h))  / h^2, D(2h) = (f(x+2h) - 2 f(x) + f(x-2h)) / (2h)^2 = (f(x+2h) - 2 f(x) + f(x-2h)) / (4 h^2). Richardson extrapolation eliminates the leading O(h^2) error term: f''(x) ≈ (4 * D(h) - D(2h)) / 3, accurate to O(h^4). Write a Python function `richardson_2nd_derivative(values, h)` that takes a 5-element list values = [f(x-2h), f(x-h), f(x), f(x+h), f(x+2h)] and step h > 0, and returns the Richardson-extrapolated f''(x). Raise ValueError if len(values) != 5 or h <= 0.",
+  "reference_solution": "def richardson_2nd_derivative(values, h: float) -> float:\n    if len(values) != 5:\n        raise ValueError(\"values must have exactly 5 elements: [f(x-2h), f(x-h), f(x), f(x+h), f(x+2h)]\")\n    if h <= 0:\n        raise ValueError(\"h must be positive\")\n    f_m2, f_m1, f_0, f_p1, f_p2 = values\n    D_h  = (f_p1 - 2.0 * f_0 + f_m1) / (h * h)\n    D_2h = (f_p2 - 2.0 * f_0 + f_m2) / (4.0 * h * h)\n    return (4.0 * D_h - D_2h) / 3.0\n",
+  "test_cases": [
+    {
+      "name": "quartic_at_x_one",
+      "description": "f(x) = x^4, x = 1, h = 0.1. True f''(1) = 12 (exact for Richardson on quartic since 4th derivative is constant and 6th vanishes).",
+      "inputs": { "values": [0.4096, 0.6561, 1.0, 1.4641, 2.0736], "h": 0.1 },
+      "expected": { "fpp_within_eps": [11.9999, 12.0001] }
+    },
+    {
+      "name": "quartic_at_x_two",
+      "description": "f(x) = x^4, x = 2, h = 0.1. True f''(2) = 48. values are f(1.8), f(1.9), f(2.0), f(2.1), f(2.2).",
+      "inputs": { "values": [10.4976, 13.0321, 16.0, 19.4481, 23.4256], "h": 0.1 },
+      "expected": { "fpp_within_eps": [47.9990, 48.0010] }
+    },
+    {
+      "name": "cosine_at_zero",
+      "description": "f(x) = cos(x), x = 0, h = 0.1. True f''(0) = -1. Richardson is O(h^4) so error ~1e-6 expected.",
+      "inputs": { "values": [0.9800665778412416, 0.9950041652780258, 1.0, 0.9950041652780258, 0.9800665778412416], "h": 0.1 },
+      "expected": { "fpp_within_eps": [-1.00002, -0.99998] }
+    },
+    {
+      "name": "exponential_at_zero",
+      "description": "f(x) = e^x, x = 0, h = 0.05. True f''(0) = 1. values = e^{-0.1, -0.05, 0, 0.05, 0.1}.",
+      "inputs": { "values": [0.9048374180359595, 0.951229424500714, 1.0, 1.0512710963760241, 1.1051709180756477], "h": 0.05 },
+      "expected": { "fpp_within_eps": [0.99999, 1.00001] }
+    },
+    {
+      "name": "rejects_wrong_length",
+      "inputs": { "values": [0.0, 1.0, 2.0, 3.0], "h": 0.1 },
+      "expected": { "raises": "ValueError" }
+    },
+    {
+      "name": "rejects_zero_step",
+      "inputs": { "values": [0.0, 1.0, 2.0, 3.0, 4.0], "h": 0.0 },
+      "expected": { "raises": "ValueError" }
+    }
+  ],
+  "verification_targets": {
+    "dimensional": {
+      "lhs_label": "f''(x)  [units of f / (units of x)^2]",
+      "lhs_dims": {},
+      "rhs_label": "(4 D(h) - D(2h)) / 3 with D(h) = (f(x+h) - 2 f(x) + f(x-h)) / h^2",
+      "rhs_dims": {}
+    },
+    "limits": [
+      "f polynomial of degree <= 5: Richardson is exact (modulo float).",
+      "Smooth f: error scales as O(h^4) (versus O(h^2) for D(h) alone).",
+      "Round-off dominates for h below ~sqrt[6]{epsilon_mach} · scale (typically h < 1e-3 for f ~ O(1))."
+    ],
+    "validation_envelopes": {}
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "id": "henderson-hasselbalch-ratio-py",
+  "card_ids": ["henderson-hasselbalch-equation"],
+  "domain": "chemistry-equilibrium",
+  "language": "python",
+  "prompt": "Write a Python function `base_to_acid_ratio(pH, pKa)` that returns the molar concentration ratio [A-]/[HA] of conjugate base to acid in an aqueous buffer with given pH and pKa, from the inverted Henderson-Hasselbalch equation: [A-]/[HA] = 10^(pH - pKa).",
+  "reference_solution": "def base_to_acid_ratio(pH: float, pKa: float) -> float:\n    return 10.0 ** (pH - pKa)\n",
+  "test_cases": [
+    {
+      "name": "pH_equals_pKa",
+      "description": "pH = pKa -> ratio = 1 (equimolar).",
+      "inputs": { "pH": 4.76, "pKa": 4.76 },
+      "expected": { "ratio_within_eps": [0.9999, 1.0001] }
+    },
+    {
+      "name": "one_unit_above_pKa",
+      "description": "pH = pKa + 1 -> ratio = 10.",
+      "inputs": { "pH": 5.76, "pKa": 4.76 },
+      "expected": { "ratio_within_eps": [9.99, 10.01] }
+    },
+    {
+      "name": "one_unit_below_pKa",
+      "description": "pH = pKa - 1 -> ratio = 0.1.",
+      "inputs": { "pH": 3.76, "pKa": 4.76 },
+      "expected": { "ratio_within_eps": [0.0999, 0.1001] }
+    },
+    {
+      "name": "two_units_above",
+      "inputs": { "pH": 9.0, "pKa": 7.0 },
+      "expected": { "ratio_within_eps": [99.9, 100.1] }
+    }
+  ],
+  "verification_targets": {
+    "dimensional": {
+      "lhs_label": "[A-]/[HA]  [dimensionless]",
+      "lhs_dims": {},
+      "rhs_label": "10^(pH - pKa)  [dimensionless]",
+      "rhs_dims": {}
+    },
+    "limits": [
+      "pH = pKa:  ratio = 1  (buffer point)",
+      "pH - pKa = 1:  ratio = 10  (decade above)",
+      "pH - pKa = -1:  ratio = 0.1  (decade below)",
+      "ratio(pH, pKa) * ratio(pKa, pH) = 1  (inverse symmetry)"
+    ]
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "id": "momentum-inelastic-collision-py",
+  "card_ids": ["conservation-of-momentum"],
+  "domain": "physics-classical-mechanics",
+  "language": "python",
+  "prompt": "Write a Python function `inelastic_collision_velocity(m1, v1, m2, v2)` that returns the common post-collision velocity (m/s) of two bodies in a perfectly inelastic 1D collision, by momentum conservation: v_f = (m1*v1 + m2*v2) / (m1 + m2). Inputs: masses m1, m2 (kg, positive), velocities v1, v2 (m/s, any sign). Raise ValueError if either mass is non-positive.",
+  "reference_solution": "def inelastic_collision_velocity(m1: float, v1: float, m2: float, v2: float) -> float:\n    if m1 <= 0:\n        raise ValueError(\"m1 must be positive\")\n    if m2 <= 0:\n        raise ValueError(\"m2 must be positive\")\n    return (m1 * v1 + m2 * v2) / (m1 + m2)\n",
+  "test_cases": [
+    {
+      "name": "equal_mass_one_at_rest",
+      "description": "Two equal masses, one moving and one at rest -> stick together at half speed.",
+      "inputs": { "m1": 1.0, "v1": 10.0, "m2": 1.0, "v2": 0.0 },
+      "expected": { "v_f": 5.0, "atol": 1e-12 }
+    },
+    {
+      "name": "head_on_unequal",
+      "description": "m1=2 v1=3, m2=1 v2=-3 -> v_f = (6 - 3)/3 = 1.",
+      "inputs": { "m1": 2.0, "v1": 3.0, "m2": 1.0, "v2": -3.0 },
+      "expected": { "v_f": 1.0, "atol": 1e-12 }
+    },
+    {
+      "name": "heavy_dominant_mass",
+      "description": "Very heavy body absorbs a light one with little velocity change.",
+      "inputs": { "m1": 1000.0, "v1": 0.0, "m2": 1.0, "v2": 100.0 },
+      "expected": { "v_f_within_eps": [0.099, 0.101] }
+    },
+    {
+      "name": "rejects_zero_mass",
+      "inputs": { "m1": 0.0, "v1": 10.0, "m2": 1.0, "v2": 0.0 },
+      "expected": { "raises": "ValueError" }
+    }
+  ],
+  "verification_targets": {
+    "dimensional": {
+      "lhs_label": "v_f  [m/s]",
+      "lhs_dims": { "L": 1, "T": -1 },
+      "rhs_label": "(m1 v1 + m2 v2)/(m1 + m2)  [m/s]",
+      "rhs_dims": { "L": 1, "T": -1 }
+    },
+    "limits": [
+      "m2 -> 0:  v_f -> v1  (incoming body's speed preserved)",
+      "m2 -> infinity:  v_f -> v2  (target body dominates)",
+      "v1 = v2:  v_f = v1 = v2  (no relative motion, no collision)"
+    ],
+    "conservation_laws": ["momentum"]
+  }
+}

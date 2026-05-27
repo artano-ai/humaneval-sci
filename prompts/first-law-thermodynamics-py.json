@@ -1,0 +1,42 @@
+{
+  "id": "first-law-thermodynamics-py",
+  "card_ids": ["first-law-of-thermodynamics"],
+  "domain": "physics-thermodynamics",
+  "language": "python",
+  "prompt": "Write a Python function `delta_internal_energy(Q, W)` that returns the change in internal energy of a closed system using the first law of thermodynamics. Sign convention: Q is heat added TO the system (J, positive when system absorbs), W is work done BY the system (J, positive when system expands). Formula: ΔU = Q − W.",
+  "reference_solution": "def delta_internal_energy(Q: float, W: float) -> float:\n    return Q - W\n",
+  "test_cases": [
+    {
+      "name": "isothermal_expansion",
+      "description": "Q in = W out -> ΔU = 0 (ideal-gas isothermal process).",
+      "inputs": { "Q": 100.0, "W": 100.0 },
+      "expected": { "dU": 0.0, "atol": 1e-12 }
+    },
+    {
+      "name": "heat_added_no_work",
+      "description": "Isochoric heating: Q=200 J in, W=0 -> ΔU=200 J.",
+      "inputs": { "Q": 200.0, "W": 0.0 },
+      "expected": { "dU": 200.0, "atol": 1e-9 }
+    },
+    {
+      "name": "adiabatic_compression",
+      "description": "No heat exchange, work done ON the system (W<0) -> ΔU = -W > 0.",
+      "inputs": { "Q": 0.0, "W": -50.0 },
+      "expected": { "dU": 50.0, "atol": 1e-9 }
+    }
+  ],
+  "verification_targets": {
+    "dimensional": {
+      "lhs_label": "ΔU  [J]",
+      "lhs_dims": { "L": 2, "M": 1, "T": -2 },
+      "rhs_label": "Q - W  [J]",
+      "rhs_dims": { "L": 2, "M": 1, "T": -2 }
+    },
+    "limits": [
+      "Q = W:  ΔU = 0  (isothermal idealization for ideal gas)",
+      "W = 0:  ΔU = Q  (isochoric heating)",
+      "Q = 0:  ΔU = -W  (adiabatic process)"
+    ],
+    "conservation_laws": ["energy"]
+  }
+}

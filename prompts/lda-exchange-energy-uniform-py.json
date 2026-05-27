@@ -1,0 +1,58 @@
+{
+  "id": "lda-exchange-energy-uniform-py",
+  "card_ids": ["lda-exchange-correlation"],
+  "domain": "physics-condensed-matter",
+  "language": "python",
+  "prompt": "Write a Python function `lda_exchange_per_electron(n)` that returns the Local Density Approximation (LDA) exchange energy per electron of a uniform electron gas, in Hartree atomic units. The Slater-Dirac result: epsilon_x(n) = -(3/4) * (3 / pi)^(1/3) * n^(1/3) where n is the electron number density in inverse cubic Bohr radii (1/a_0^3). The closed-form coefficient is -(3/4)(3/pi)^(1/3) ≈ -0.738559 Hartree·a_0. Inputs: n > 0 (density in 1/a_0^3). Raise ValueError if n <= 0. Return the per-electron exchange energy (a negative number in Hartree).",
+  "reference_solution": "import math\n\ndef lda_exchange_per_electron(n: float) -> float:\n    if n <= 0:\n        raise ValueError(\"n must be positive\")\n    return -(3.0 / 4.0) * (3.0 / math.pi) ** (1.0 / 3.0) * n ** (1.0 / 3.0)\n",
+  "test_cases": [
+    {
+      "name": "unit_density",
+      "description": "n = 1 a_0^-3: epsilon_x = -(3/4)(3/pi)^(1/3) ≈ -0.738559 Hartree (the bare coefficient).",
+      "inputs": { "n": 1.0 },
+      "expected": { "epsilon_x_Hartree_within_eps": [-0.738565, -0.738555] }
+    },
+    {
+      "name": "ten_percent_density",
+      "description": "n = 0.1 a_0^-3 → epsilon_x = coeff × 0.1^(1/3) ≈ -0.342809.",
+      "inputs": { "n": 0.1 },
+      "expected": { "epsilon_x_Hartree_within_eps": [-0.342815, -0.342805] }
+    },
+    {
+      "name": "thousandth_density",
+      "description": "n = 0.001 a_0^-3 → epsilon_x = coeff × 0.001^(1/3) = coeff / 10 ≈ -0.073856.",
+      "inputs": { "n": 0.001 },
+      "expected": { "epsilon_x_Hartree_within_eps": [-0.073860, -0.073850] }
+    },
+    {
+      "name": "scaling_law_n_cube_root",
+      "description": "Doubling n multiplies |epsilon_x| by 2^(1/3) ≈ 1.2599. n = 2.0 → epsilon_x ≈ -0.93053.",
+      "inputs": { "n": 2.0 },
+      "expected": { "epsilon_x_Hartree_within_eps": [-0.93060, -0.93045] }
+    },
+    {
+      "name": "rejects_zero",
+      "inputs": { "n": 0.0 },
+      "expected": { "raises": "ValueError" }
+    },
+    {
+      "name": "rejects_negative",
+      "inputs": { "n": -1.0 },
+      "expected": { "raises": "ValueError" }
+    }
+  ],
+  "verification_targets": {
+    "dimensional": {
+      "lhs_label": "epsilon_x  [Hartree/electron]  (atomic units)",
+      "lhs_dims": {},
+      "rhs_label": "-(3/4)(3/pi)^(1/3) n^(1/3)  [a_0^-1 in atomic units = Hartree]",
+      "rhs_dims": {}
+    },
+    "limits": [
+      "epsilon_x < 0 for all n > 0 (exchange is always attractive in the HEG).",
+      "epsilon_x → 0 as n → 0 (vanishing density, no exchange).",
+      "epsilon_x ~ n^(1/3) — a hallmark of the LDA scaling."
+    ],
+    "validation_envelopes": {}
+  }
+}

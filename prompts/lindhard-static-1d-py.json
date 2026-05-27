@@ -1,0 +1,55 @@
+{
+  "id": "lindhard-static-1d-py",
+  "card_ids": ["lindhard-susceptibility"],
+  "domain": "physics-condensed-matter",
+  "language": "python",
+  "prompt": "Write a Python function `lindhard_static_1d(q, k_F)` that returns the 1D static Lindhard susceptibility χ(q) of a non-interacting free-electron gas at zero temperature, in units of (states / (energy · length)). The 1D static Lindhard formula: χ(q) = - (m / (pi * hbar^2 * q)) * ln| (2 k_F + q) / (2 k_F - q) |. Use m = 9.1093837e-31 kg (electron mass) and hbar = 1.054571817e-34 J·s. Inputs: wavevector q (1/m, positive), Fermi wavevector k_F (1/m, positive). Raise ValueError if q <= 0 or k_F <= 0 or if q == 2 * k_F (Kohn anomaly: logarithmic divergence).",
+  "reference_solution": "import math\n\ndef lindhard_static_1d(q: float, k_F: float) -> float:\n    m = 9.1093837e-31\n    hbar = 1.054571817e-34\n    if q <= 0:\n        raise ValueError(\"q must be positive\")\n    if k_F <= 0:\n        raise ValueError(\"k_F must be positive\")\n    if q == 2.0 * k_F:\n        raise ValueError(\"q = 2 k_F is the Kohn anomaly; logarithmic divergence\")\n    return -(m / (math.pi * hbar * hbar * q)) * math.log(abs((2.0 * k_F + q) / (2.0 * k_F - q)))\n",
+  "test_cases": [
+    {
+      "name": "long_wavelength_limit_proportional_to_dos",
+      "description": "q << k_F: ln|(2k_F+q)/(2k_F-q)| ≈ 2q/k_F, so chi(q) ≈ -2m/(pi hbar^2 k_F) (independent of q). Numerically: m=9.109e-31, hbar^2=1.112e-68, k_F=1e10 -> chi ≈ -2.61e27 (states/J/m).",
+      "inputs": { "q": 1.0e8, "k_F": 1.0e10 },
+      "expected": { "chi_within_eps": [-2.62e27, -2.60e27] }
+    },
+    {
+      "name": "q_equals_k_F",
+      "description": "q = k_F: chi = -(m/(pi hbar^2 k_F)) ln(3). With k_F=1e10: chi ≈ -2.87e27.",
+      "inputs": { "q": 1.0e10, "k_F": 1.0e10 },
+      "expected": { "chi_within_eps": [-2.87e27, -2.86e27] }
+    },
+    {
+      "name": "rejects_2kF_singularity",
+      "description": "q = 2 k_F is the Kohn anomaly (log divergence) — must raise.",
+      "inputs": { "q": 2.0e10, "k_F": 1.0e10 },
+      "expected": { "raises": "ValueError" }
+    },
+    {
+      "name": "rejects_zero_q",
+      "inputs": { "q": 0.0, "k_F": 1.0e10 },
+      "expected": { "raises": "ValueError" }
+    },
+    {
+      "name": "rejects_negative_kF",
+      "inputs": { "q": 1.0e10, "k_F": -1.0e10 },
+      "expected": { "raises": "ValueError" }
+    }
+  ],
+  "verification_targets": {
+    "dimensional": {
+      "lhs_label": "chi(q)  [1/(J·m)]",
+      "lhs_dims": { "L": -3, "M": -1, "T": 2 },
+      "rhs_label": "-(m / (pi hbar^2 q)) ln|(2k_F+q)/(2k_F-q)|  [1/(J·m)]",
+      "rhs_dims": { "L": -3, "M": -1, "T": 2 }
+    },
+    "limits": [
+      "q -> 0:  chi -> -m / (pi hbar^2 k_F) = -DOS(E_F)  (uniform susceptibility = density of states)",
+      "q -> 2 k_F:  chi -> -infinity  (1D Kohn anomaly, log divergence — must raise)",
+      "q -> infinity:  chi -> 0  (rapid oscillations average out)"
+    ],
+    "validation_envelopes": {
+      "electronMass_kg": [9.10938e-31, 9.10939e-31],
+      "reducedPlanck_J_s": [1.054571e-34, 1.054572e-34]
+    }
+  }
+}

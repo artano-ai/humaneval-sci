@@ -1,0 +1,60 @@
+{
+  "id": "bloch-cosine-band-group-velocity-py",
+  "card_ids": ["bloch-theorem"],
+  "domain": "physics-condensed-matter",
+  "language": "python",
+  "prompt": "Write a Python function `group_velocity_cosine_band(k, t, a)` that returns the Bloch group velocity v_g = (1/hbar) dE/dk of a one-band, nearest-neighbour tight-binding chain. The dispersion is E(k) = -2 t cos(k a), so v_g(k) = (2 t a / hbar) sin(k a). Use hbar = 1.054571817e-34 J·s. Inputs: k in 1/m (any sign; only k a mod 2*pi matters); t > 0 in Joules (hopping integral); a > 0 in metres (lattice spacing). Raise ValueError if t <= 0 or a <= 0. The function returns v_g in m/s.",
+  "reference_solution": "import math\n\ndef group_velocity_cosine_band(k: float, t: float, a: float) -> float:\n    hbar = 1.054571817e-34\n    if t <= 0:\n        raise ValueError(\"t must be positive\")\n    if a <= 0:\n        raise ValueError(\"a must be positive\")\n    return (2.0 * t * a / hbar) * math.sin(k * a)\n",
+  "test_cases": [
+    {
+      "name": "band_centre_zero_velocity",
+      "description": "k = 0: sin(0) = 0 → v_g = 0 (bottom of cosine band, stationary state).",
+      "inputs": { "k": 0.0, "t": 1.602176634e-19, "a": 1.0e-10 },
+      "expected": { "v_g_m_per_s": 0.0, "atol": 1.0e-9 }
+    },
+    {
+      "name": "max_velocity_at_quarter_zone",
+      "description": "k = pi/(2 a): sin(pi/2) = 1 → v_g = 2 t a / hbar = max group velocity. With t = 1 eV and a = 1 Å: v_g ≈ 3.04e5 m/s.",
+      "inputs": { "k": 1.5707963267948966e10, "t": 1.602176634e-19, "a": 1.0e-10 },
+      "expected": { "v_g_m_per_s_within_eps": [3.03e5, 3.05e5] }
+    },
+    {
+      "name": "zone_boundary_zero_velocity",
+      "description": "k = pi/a (zone boundary): sin(pi) = 0 → v_g = 0 (top of band; stationary states with opposite curvature sign).",
+      "inputs": { "k": 3.141592653589793e10, "t": 1.602176634e-19, "a": 1.0e-10 },
+      "expected": { "v_g_m_per_s_within_eps": [-1.0e-3, 1.0e-3] }
+    },
+    {
+      "name": "intermediate_k",
+      "description": "k = pi/(4 a): sin(pi/4) = sqrt(2)/2. With t = 1 eV, a = 1 Å: v_g ≈ 2.149e5 m/s.",
+      "inputs": { "k": 7.853981633974483e9, "t": 1.602176634e-19, "a": 1.0e-10 },
+      "expected": { "v_g_m_per_s_within_eps": [2.14e5, 2.16e5] }
+    },
+    {
+      "name": "rejects_negative_hopping",
+      "inputs": { "k": 0.0, "t": -1.0e-19, "a": 1.0e-10 },
+      "expected": { "raises": "ValueError" }
+    },
+    {
+      "name": "rejects_zero_lattice_constant",
+      "inputs": { "k": 1.0e10, "t": 1.0e-19, "a": 0.0 },
+      "expected": { "raises": "ValueError" }
+    }
+  ],
+  "verification_targets": {
+    "dimensional": {
+      "lhs_label": "v_g  [m/s]",
+      "lhs_dims": { "L": 1, "T": -1 },
+      "rhs_label": "(t a / hbar) sin(k a)  [J · m / (J·s) = m/s]",
+      "rhs_dims": { "L": 1, "T": -1 }
+    },
+    "limits": [
+      "v_g(k) is periodic with period 2π/a (Brillouin zone).",
+      "v_g = 0 at k = 0 and k = ±π/a (band extrema).",
+      "|v_g|_max = 2 t a / hbar at k = ±π/(2a) (inflection points)."
+    ],
+    "validation_envelopes": {
+      "reducedPlanck_J_s": [1.054571e-34, 1.054572e-34]
+    }
+  }
+}
