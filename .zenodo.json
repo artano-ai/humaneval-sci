@@ -1,0 +1,23 @@
+{
+  "title": "HumanEval-Sci: a verification-grounded benchmark for scientific code generation",
+  "description": "A benchmark of 73 scientific-code prompts across seven domains (physics, chemistry, biology, climate, mathematics, numerical methods, and engineering). Each prompt carries a reference solution, executable tests, and per-prompt verification targets (dimensional vectors, declared limits, and validation envelopes). The repository also includes the recorded evaluation runs behind the HumanEval-Sci pilot study and a dependency-free script that regenerates the study's supplementary tables from those records.",
+  "upload_type": "dataset",
+  "license": "CC-BY-4.0",
+  "access_right": "open",
+  "creators": [
+    {
+      "name": "Akhtar, Arsalan",
+      "affiliation": "Atomira Technologies, S.L.",
+      "orcid": "0000-0002-4982-5906"
+    }
+  ],
+  "keywords": [
+    "scientific code generation",
+    "LLM evaluation",
+    "verification",
+    "benchmark",
+    "HumanEval-Sci",
+    "open-weights models",
+    "reproducibility"
+  ]
+}
